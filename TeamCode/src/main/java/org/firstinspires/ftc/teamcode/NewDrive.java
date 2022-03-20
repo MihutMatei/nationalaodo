@@ -114,12 +114,14 @@
                 intake.setPower(0.3);
             else intake.setPower(0);*/
 
-
+            //outtake
              if(gamepad1.dpad_left) {
                  intake.setDirection(DcMotorSimple.Direction.FORWARD);
-                 intake.setPower(0.6);
+                 intake.setPower(0.5);
 
              }
+             //intake
+            // TODO:change intake power ; differebt mototor 1150 -> 1600
              if(gamepad1.dpad_right) {
                  intake.setDirection(DcMotorSimple.Direction.REVERSE);
                  intake.setPower(0.6);
@@ -128,20 +130,31 @@
              if(gamepad1.dpad_down) {
                  intake.setPower(0);
              }
-             if(gamepad2.left_stick_y>0)
-                 slider.setPower(1);
-             else if(gamepad2.left_stick_y<0)
-                 slider.setPower(-1);
-             else slider.setPower(0);
 
+             //slider movement
+             if(gamepad2.left_stick_y>0) {
+                 slider.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                 slider.setPower(1);
+             }
+             else if(gamepad2.left_stick_y<0)
+             {   slider.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                 slider.setPower(-1);
+             }
+
+             else
+             {            slider.setPower(0);
+             }
+
+
+             //rotation
              if(gamepad2.dpad_left)rotire.setPosition(0.2);
-             if(gamepad2.dpad_right)rotire.setPosition(0.98);
+             if(gamepad2.dpad_right)rotire.setPosition(0.97);
+
+             //cuva
              if(color.red()>30&&color.green()>30&&ok) {
                  cuva.setPosition(0.09);
-                 slider.setTargetPosition(-1500);
-                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                 slider.setPower(1);
-                 rotire.setPosition(0.2);
+
 
              }
              if(gamepad2.dpad_down) {
@@ -149,6 +162,47 @@
 
              }
              if(gamepad2.dpad_up)ok=true;
+
+
+             //slider auto buttons
+             if(gamepad2.cross)
+             {
+                 slider.setTargetPosition(-1500);
+                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                 slider.setPower(1);
+                 intake.setDirection(DcMotorSimple.Direction.FORWARD);
+                 intake.setPower(0.3);
+                 rotire.setPosition(0.2);
+             }
+             if(gamepad2.square)
+             {
+                 slider.setTargetPosition(-1300);
+                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                 slider.setPower(1);
+                 intake.setDirection(DcMotorSimple.Direction.FORWARD);
+                 intake.setPower(0.3);
+                 rotire.setPosition(0);
+             }
+             if(gamepad2.circle)
+             {
+                 slider.setTargetPosition(-200);
+                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                 slider.setPower(1);
+                 intake.setDirection(DcMotorSimple.Direction.FORWARD);
+                 intake.setPower(0.3);
+                 rotire.setPosition(0);
+             }  if(gamepad2.triangle)
+             {  intake.setPower(0);
+                 slider.setTargetPosition(0);
+                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                 slider.setPower(-1);
+                 rotire.setPosition(0.97);
+
+             }
+
+             //telemetry
+
+
              telemetry.addData("Red", color.red());
              telemetry.addData("Green", color.green());
              telemetry.addData("Blue", color.blue());
