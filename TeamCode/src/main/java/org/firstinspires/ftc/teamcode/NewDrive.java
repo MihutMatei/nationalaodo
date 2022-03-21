@@ -148,12 +148,13 @@
 
 
              //rotation
-             if(gamepad2.dpad_left)rotire.setPosition(0.2);
-             if(gamepad2.dpad_right)rotire.setPosition(0.97);
+             /*if(gamepad2.dpad_left)rotire.setPosition(0.2);
+             if(gamepad2.dpad_right)rotire.setPosition(0.97);*/
 
              //cuva
              if(color.red()>30&&color.green()>30&&ok) {
                  cuva.setPosition(0.09);
+                 intake.setPower(0);
 
 
              }
@@ -185,20 +186,22 @@
              }
              if(gamepad2.circle)
              {
-                 slider.setTargetPosition(-200);
+                 slider.setTargetPosition(-100);
                  slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                  slider.setPower(1);
                  intake.setDirection(DcMotorSimple.Direction.FORWARD);
-                 intake.setPower(0.3);
-                 rotire.setPosition(0);
+                 intake.setPower(0);
+                 rotire.setPosition(0.15);
              }  if(gamepad2.triangle)
-             {  intake.setPower(0);
+             {  intake.setDirection(DcMotorSimple.Direction.FORWARD);
+                 intake.setPower(0);
                  slider.setTargetPosition(0);
                  slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                  slider.setPower(-1);
                  rotire.setPosition(0.97);
 
              }
+
 
              //telemetry
 
@@ -209,6 +212,7 @@
              telemetry.addData("cuva",cuva.getPosition());
              telemetry.addData("slider",slider.getCurrentPosition());
              telemetry.update();
+
 
 
 
