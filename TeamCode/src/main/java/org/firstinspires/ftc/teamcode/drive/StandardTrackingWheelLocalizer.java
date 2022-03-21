@@ -35,7 +35,7 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
     public static double FORWARD_OFFSET = 5.12; // in; offset of the lateral wheel
     //schimbat x si y multiplier conform masuratori si formula x mult =dist masurata/distanta telemetrie
     public static double X_MULTIPLIER = 1.0209290454; // Multiplier in the X direction
-    public static double Y_MULTIPLIER = 1; // Multiplier in the Y direction
+    public static double Y_MULTIPLIER = 1.0272741281; // Multiplier in the Y direction
 
     private Encoder leftEncoder, rightEncoder, frontEncoder;
 
