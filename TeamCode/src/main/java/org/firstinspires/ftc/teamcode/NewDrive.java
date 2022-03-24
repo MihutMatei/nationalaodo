@@ -52,7 +52,7 @@
      private Servo rotire;
      private DcMotorEx slider;
      private DcMotorEx carusel;
-     ColorSensor color;
+     private ColorSensor color;
 
 
      @Override
@@ -123,7 +123,7 @@
 
              }
              //intake
-            // TODO:change intake power ; differebt mototor 1150 -> 1600
+
              if(gamepad1.dpad_right) {
                  intake.setDirection(DcMotorSimple.Direction.REVERSE);
                  intake.setPower(0.6);
@@ -150,7 +150,7 @@
 
 
              //rotation
-             if(gamepad2.dpad_left)rotire.setPosition(0.2);
+             if(gamepad2.dpad_left)rotire.setPosition(0);
              if(gamepad2.dpad_right)rotire.setPosition(1);
 
              //cuva
