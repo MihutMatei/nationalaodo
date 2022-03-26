@@ -49,7 +49,7 @@
 
      private DcMotorEx intake;
      private Servo cuva;
-     private Servo rotire;
+     private DcMotorEx rotire;
      private DcMotorEx slider;
      private DcMotorEx carusel;
      private ColorSensor color;
@@ -63,11 +63,12 @@
          intake =hardwareMap.get(DcMotorEx.class,"intake");
          color = hardwareMap.get(ColorSensor.class, "color");
          cuva = hardwareMap.get(Servo.class,"cuva");
-         rotire = hardwareMap.get(Servo.class,"rotire");
+         rotire = hardwareMap.get(DcMotorEx.class,"rotire");
          slider = hardwareMap.get(DcMotorEx.class,"slider");
          carusel = hardwareMap.get(DcMotorEx.class,"carusel");
 
          slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+         rotire.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
          slider.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
          boolean ok=true;
@@ -79,7 +80,7 @@
 
          SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-
+         ;
          waitForStart();
          drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -87,6 +88,14 @@
 
 
          while (opModeIsActive()) {
+
+             telemetry.addData("Red", color.red());
+             telemetry.addData("Green", color.green());
+             telemetry.addData("Blue", color.blue());
+             telemetry.addData("cuva",cuva.getPosition());
+             telemetry.addData("slider",slider.getCurrentPosition());
+             telemetry.addData("rotire",rotire.getCurrentPosition());
+             telemetry.update();
 
              ElapsedTime runtime1 = new ElapsedTime(0);
 
@@ -119,14 +128,15 @@
             //outtake
              if(gamepad1.dpad_left) {
                  intake.setDirection(DcMotorSimple.Direction.FORWARD);
-                 intake.setPower(0.5);
-
+                 intake.setPower(0.7);
+            //0.5
              }
              //intake
 
              if(gamepad1.dpad_right) {
                  intake.setDirection(DcMotorSimple.Direction.REVERSE);
-                 intake.setPower(0.6);
+                 intake.setPower(0.7);
+                 //0.6
 
              }
              if(gamepad1.dpad_down) {
@@ -150,9 +160,13 @@
 
 
              //rotation
-             if(gamepad2.dpad_left)rotire.setPosition(0);
-             if(gamepad2.dpad_right)rotire.setPosition(1);
+             if(gamepad2.right_stick_y>=0||gamepad2.right_stick_y<=0) {
+                 rotire.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                 rotire.setPower(gamepad2.right_stick_y);
+             }
 
+
+            //170 190 210
              //cuva
              if(color.red()>30&&color.green()>30&&ok) {
                  cuva.setPosition(0.09);
@@ -169,54 +183,101 @@
 
              //slider auto buttons
              if(gamepad2.cross)
-             {
+             {   rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                  slider.setTargetPosition(-1500);
                  slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                 slider.setPower(0.7);
-                 intake.setDirection(DcMotorSimple.Direction.FORWARD);
-                 intake.setPower(0.3);
-                 rotire.setPosition(0.2);
+
+
+                 rotire.setTargetPosition(1800);
+                 rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                 slider.setPower(0.6);
+                 rotire.setPower(-0.1);
+                 while(rotire.isBusy())
+                 {
+                    if(rotire.getCurrentPosition()>1750)
+                    {
+                        //rotire.setPower(0.1);
+                        rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                        break;
+                    }
+
+                 }
+
+
              }
              if(gamepad2.square)
-             {
+             {   rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                  slider.setTargetPosition(-1200);
                  slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                 slider.setPower(0.7);
-                 intake.setDirection(DcMotorSimple.Direction.FORWARD);
-                 intake.setPower(0.3);
-                 rotire.setPosition(0);
+
+
+                 rotire.setTargetPosition(2100);
+                 rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                 slider.setPower(0.6);
+                 rotire.setPower(-0.3);
+                 while(rotire.isBusy()) {
+                     if (rotire.getCurrentPosition() > 2050) {
+                         //rotire.setPower(0.1);
+                         rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                         break;
+
+                     }
+                 }
              }
              if(gamepad2.circle)
-             {
+             {   rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                  slider.setTargetPosition(-100);
                  slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                 slider.setPower(0.7);
+
+
+                 rotire.setTargetPosition(2400);
+                 rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                 slider.setPower(0.6);
+                 rotire.setPower(-0.3);
+                 while(rotire.isBusy()) {
+                     if (rotire.getCurrentPosition() > 2350) {
+                         //rotire.setPower(0.1);
+                         rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                         break;
+                     }
+                 }
+             }
+
+             if(gamepad2.triangle)
+             {   rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                  intake.setDirection(DcMotorSimple.Direction.FORWARD);
-                 intake.setPower(0);
-                 rotire.setPosition(0.15);
-             }  if(gamepad2.triangle)
-             {  intake.setDirection(DcMotorSimple.Direction.FORWARD);
                  intake.setPower(0);
                  slider.setTargetPosition(0);
                  slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                 rotire.setTargetPosition(10);
+                 rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                  slider.setPower(-0.7);
-                 rotire.setPosition(1);
+                 rotire.setPower(0.7);
+                 while(rotire.isBusy()) {
+                     if (rotire.getCurrentPosition() < 30) {
+                         //rotire.setPower(0.1);
+                         rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                         break;
+                     }
+                 }
+                // rotire.setPosition(1);
 
              }
-            if(gamepad1.circle)carusel.setPower(0.4);
+             if(gamepad1.circle)carusel.setPower(0.4);
              if(gamepad1.cross)carusel.setPower(-0.4);
              if(gamepad1.triangle)carusel.setPower(0);
+
+
+
 
 
              //telemetry
 
 
-             telemetry.addData("Red", color.red());
-             telemetry.addData("Green", color.green());
-             telemetry.addData("Blue", color.blue());
-             telemetry.addData("cuva",cuva.getPosition());
-             telemetry.addData("slider",slider.getCurrentPosition());
-             telemetry.update();
+
 
 
 

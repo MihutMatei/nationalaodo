@@ -38,7 +38,7 @@ public class auto_bluext extends LinearOpMode {
     private DcMotorEx intake;
     private DcMotor carusel;
     private Servo cuva;
-    private Servo rotire;
+    private DcMotorEx rotire;
     boolean bCameraOpened = false;
     private ColorSensor color;
 
@@ -54,10 +54,11 @@ public class auto_bluext extends LinearOpMode {
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         carusel = hardwareMap.get(DcMotor.class, "carusel");
         cuva = hardwareMap.get(Servo.class,"cuva");
-        rotire = hardwareMap.get(Servo.class,"rotire");
+        rotire = hardwareMap.get(DcMotorEx.class,"rotire");
         color = hardwareMap.get(ColorSensor.class, "color");
 
         carusel.setDirection(DcMotorSimple.Direction.REVERSE);
+        rotire.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
 
@@ -74,6 +75,7 @@ public class auto_bluext extends LinearOpMode {
 
         //traiectorii blueside extern
         Pose2d startPose = new Pose2d(0, 0, 0);
+
         drive.setPoseEstimate(startPose);
 
         Trajectory turnToShipLevel3 = drive.trajectoryBuilder(startPose)
@@ -81,17 +83,47 @@ public class auto_bluext extends LinearOpMode {
                 .build();
 
         Trajectory turnToShipLevel2 = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-15,-10,Math.toRadians(215)))
-                .addTemporalMarker(0.1,()->{
-                    rotire.setPosition(0.15);
+                .lineToSplineHeading(new Pose2d(-15,-10,Math.toRadians(220)))
+                .addTemporalMarker(1,()->{
+
+
+
+                    rotire.setTargetPosition(2100);
+                    rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                    rotire.setPower(-0.3);
+                    if(rotire.isBusy()) {
+                        if (rotire.getCurrentPosition() > 1900) {
+                            rotire.setPower(0);
+                            rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+
+                        }
+                    }
                 })
                 .build();
 
         Trajectory turnToShipLevel1 = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-15,-10,Math.toRadians(215)))
-                .addTemporalMarker(0.1,()->{
-                    rotire.setPosition(0.1);
-                })
+                .lineToSplineHeading(new Pose2d(-15,-10,Math.toRadians(220)))
+                .addTemporalMarker(1,()->{
+
+
+
+
+
+                    rotire.setTargetPosition(2400);
+                    rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                    rotire.setPower(-0.3);
+                    if(rotire.isBusy()) {
+                        if (rotire.getCurrentPosition() > 2100) {
+                            rotire.setPower(0);
+                            rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+                        }
+                    }})
                 .build();
 
 
@@ -130,7 +162,7 @@ public class auto_bluext extends LinearOpMode {
         while (!opModeIsActive() && !isStopRequested()) {
             //telemetry.addData("Zona", pipeline.getZone());
             cuva.setPosition(0.09);
-            rotire.setPosition(1);
+
 
 
                 left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
@@ -159,11 +191,25 @@ public class auto_bluext extends LinearOpMode {
 
 
 
-                sleep(500);
+                sleep(2000);
                 cuva.setPosition(0.5);
                 sleep(1000);
 
-                rotire.setPosition(1);
+
+
+                slider.setTargetPosition(0);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setTargetPosition(10);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slider.setPower(-0.7);
+                rotire.setPower(0.7);
+                while(rotire.isBusy()) {
+                    if (rotire.getCurrentPosition() < 30) {
+                        //rotire.setPower(0.1);
+                        rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                        break;
+                    }
+                }
 
                 sleep(500);
                 endPose = turnToShipLevel1.end();
@@ -172,11 +218,26 @@ public class auto_bluext extends LinearOpMode {
                 drive.followTrajectory(turnToShipLevel2);
 
 
-                sleep(500);
+                sleep(2000);
                 cuva.setPosition(0.5);
                 sleep(1000);
 
-                rotire.setPosition(1);
+
+                intake.setDirection(DcMotorSimple.Direction.FORWARD);
+                intake.setPower(0);
+                slider.setTargetPosition(0);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setTargetPosition(10);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slider.setPower(-0.7);
+                rotire.setPower(0.7);
+                while(rotire.isBusy()) {
+                    if (rotire.getCurrentPosition() < 30) {
+                        //rotire.setPower(0.1);
+                        rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                        break;
+                    }
+                }
 
                 sleep(500);
 
@@ -188,14 +249,24 @@ public class auto_bluext extends LinearOpMode {
                 endPose = turnToShipLevel3.end();
 
 
-                slider.setTargetPosition(-1200);
+               // rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                slider.setTargetPosition(-1500);
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                slider.setPower(0.7);
 
-                rotire.setPosition(0.2);
 
-                while(slider.isBusy())
+                rotire.setTargetPosition(1800);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                slider.setPower(0.6);
+                rotire.setPower(-0.3);
+                while(rotire.isBusy())
                 {
+                    if(rotire.getCurrentPosition()>1750)
+                    {
+                        //rotire.setPower(0.1);
+                        rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                        break;
+                    }
 
                 }
                 sleep(500);
@@ -203,10 +274,22 @@ public class auto_bluext extends LinearOpMode {
 
                 sleep(1000);
 
+
+
+
                 slider.setTargetPosition(0);
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setTargetPosition(10);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 slider.setPower(-0.7);
-                rotire.setPosition(1);
+                rotire.setPower(0.7);
+                while(rotire.isBusy()) {
+                    if (rotire.getCurrentPosition() < 30) {
+                        //rotire.setPower(0.1);
+                        rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                        break;
+                    }
+                }
 
                 sleep(500);
             }
