@@ -125,6 +125,9 @@ public class auto_bluext extends LinearOpMode {
                         }
                     }})
                 .build();
+        Trajectory turnDuck = drive.trajectoryBuilder(startPose)
+                .lineToSplineHeading(new Pose2d(-1,20,Math.toRadians(90)))
+                .build();
 
 
         //x -9  y 7
@@ -186,174 +189,8 @@ public class auto_bluext extends LinearOpMode {
         Pose2d endPose = turnToShipLevel1.end();
 
         if (opModeIsActive()) {
-            if (zone == 1 || zone == 0) {
-                drive.followTrajectory(turnToShipLevel1);
-
-
-
-                sleep(2000);
-                cuva.setPosition(0.5);
-                sleep(1000);
-
-
-
-                slider.setTargetPosition(0);
-                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                rotire.setTargetPosition(10);
-                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                slider.setPower(-0.7);
-                rotire.setPower(0.7);
-                while(rotire.isBusy()) {
-                    if (rotire.getCurrentPosition() < 30) {
-                        //rotire.setPower(0.1);
-                        rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                        break;
-                    }
-                }
-
-                sleep(500);
-                endPose = turnToShipLevel1.end();
-            }
-            if (zone == 2) {
-                drive.followTrajectory(turnToShipLevel2);
-
-
-                sleep(2000);
-                cuva.setPosition(0.5);
-                sleep(1000);
-
-
-                intake.setDirection(DcMotorSimple.Direction.FORWARD);
-                intake.setPower(0);
-                slider.setTargetPosition(0);
-                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                rotire.setTargetPosition(10);
-                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                slider.setPower(-0.7);
-                rotire.setPower(0.7);
-                while(rotire.isBusy()) {
-                    if (rotire.getCurrentPosition() < 30) {
-                        //rotire.setPower(0.1);
-                        rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                        break;
-                    }
-                }
-
-                sleep(500);
-
-                endPose = turnToShipLevel2.end();
-            }
-            if (zone == 3) {
-                drive.followTrajectory(turnToShipLevel3);
-
-                endPose = turnToShipLevel3.end();
-
-
-               // rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                slider.setTargetPosition(-1500);
-                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-
-                rotire.setTargetPosition(1800);
-                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-                slider.setPower(0.6);
-                rotire.setPower(-0.3);
-                while(rotire.isBusy())
-                {
-                    if(rotire.getCurrentPosition()>1750)
-                    {
-                        //rotire.setPower(0.1);
-                        rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                        break;
-                    }
-
-                }
-                sleep(500);
-                cuva.setPosition(0.5);
-
-                sleep(1000);
-
-
-
-
-                slider.setTargetPosition(0);
-                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                rotire.setTargetPosition(10);
-                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                slider.setPower(-0.7);
-                rotire.setPower(0.7);
-                while(rotire.isBusy()) {
-                    if (rotire.getCurrentPosition() < 30) {
-                        //rotire.setPower(0.1);
-                        rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                        break;
-                    }
-                }
-
-                sleep(500);
-            }
-            cuva.setPosition(0.09);
-
-            Trajectory turnDuck = drive.trajectoryBuilder(endPose)
-                    .lineToSplineHeading(new Pose2d(-2,30,Math.toRadians(-90)))
-                    .build();
-
-            Trajectory toStorage = drive.trajectoryBuilder(turnDuck.end())
-                    .lineToSplineHeading(new Pose2d(-30,30,Math.toRadians(180)))
-                    .build();
-
 
             drive.followTrajectory(turnDuck);
-
-            runtime2.reset();
-            while (runtime2.time() < 4) {
-
-                carusel.setPower(0.35);
-
-            }
-
-           /* webcam.setPipeline(detectionPipeline);
-            detectionPipeline.setGridSize(7);*/
-
-            /*sleep(1000);
-            drive.followTrajectory(toStorage);
-
-            final double degrees = 3.5; // should be 3.5 but put it to 4 due to wheel error
-
-            int duckZone = detectionPipeline.getDuckZone();
-            int column = detectionPipeline.getColumn(duckZone);
-
-            int degreesMult = column - 5;
-            intake.setDirection(DcMotorSimple.Direction.REVERSE);
-            intake.setPower(0.6);
-            Trajectory pickupDuck = drive.trajectoryBuilder(toStorage.end())
-                    .lineToSplineHeading(new Pose2d(-29,18,Math.toRadians(180-degrees*degreesMult)))
-                    .build();
-            Trajectory goDuck = drive.trajectoryBuilder(pickupDuck.end())
-                    .back(28)
-                    .build();*/
-
-           /* drive.followTrajectory(pickupDuck);*/
-            sleep(200);
-           /* drive.followTrajectory(goDuck);*/
-
-            Trajectory goPark = drive.trajectoryBuilder(turnDuck.end())
-                    .lineToSplineHeading(new Pose2d(-25,30,Math.toRadians(-90)))
-                    .build();
-
-            sleep(500);
-
-         /*   if(color.red() > 30 && color.green() > 30) {
-                cuva.setPosition(0.09);
-                intake.setPower(0);
-                //traiectorie spre ship
-            }
-            else*/ drive.followTrajectory(goPark);
-
-
-
-
 
         }
     }
