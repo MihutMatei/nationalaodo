@@ -16,6 +16,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.advanced.DetectionPipeline;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -38,7 +40,7 @@ public class auto_bluext extends LinearOpMode {
     private DcMotorEx intake;
     private DcMotor carusel;
     private Servo cuva;
-    private DcMotorEx rotire;
+    private Servo rotire;
     boolean bCameraOpened = false;
     private ColorSensor color;
 
@@ -54,11 +56,11 @@ public class auto_bluext extends LinearOpMode {
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         carusel = hardwareMap.get(DcMotor.class, "carusel");
         cuva = hardwareMap.get(Servo.class,"cuva");
-        rotire = hardwareMap.get(DcMotorEx.class,"rotire");
+        rotire = hardwareMap.get(Servo.class,"rotire");
         color = hardwareMap.get(ColorSensor.class, "color");
 
         carusel.setDirection(DcMotorSimple.Direction.REVERSE);
-        rotire.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
 
 
 
@@ -69,66 +71,35 @@ public class auto_bluext extends LinearOpMode {
 
         ElapsedTime runtime2 = new ElapsedTime(0);
 
-
-
-        //----------------------------------------------------------------------------------------------
-
-        //traiectorii blueside extern
         Pose2d startPose = new Pose2d(0, 0, 0);
 
         drive.setPoseEstimate(startPose);
 
-        Trajectory turnToShipLevel3 = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-9,0,Math.toRadians(215)))
-                .build();
-
-        Trajectory turnToShipLevel2 = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-15,-10,Math.toRadians(220)))
-                .addTemporalMarker(1,()->{
-
-
-
-                    rotire.setTargetPosition(2100);
-                    rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-
-                    rotire.setPower(-0.3);
-                    if(rotire.isBusy()) {
-                        if (rotire.getCurrentPosition() > 1900) {
-                            rotire.setPower(0);
-                            rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-
-                        }
-                    }
-                })
-                .build();
-
-        Trajectory turnToShipLevel1 = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-15,-10,Math.toRadians(220)))
-                .addTemporalMarker(1,()->{
-
-
-
-
-
-                    rotire.setTargetPosition(2400);
-                    rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-
-                    rotire.setPower(-0.3);
-                    if(rotire.isBusy()) {
-                        if (rotire.getCurrentPosition() > 2100) {
-                            rotire.setPower(0);
-                            rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-                        }
-                    }})
-                .build();
         Trajectory turnDuck = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-1,20,Math.toRadians(90)))
+                .lineToSplineHeading(new Pose2d(-2,25,Math.toRadians(-90)))
                 .build();
 
+        Trajectory allignWithHub = drive.trajectoryBuilder(turnDuck.end())
+                .lineToSplineHeading(new Pose2d(-40,25,Math.toRadians(-90)))
+                .build();
+
+
+        Trajectory forwardToHub = drive.trajectoryBuilder(allignWithHub.end())
+                .forward(15)
+
+                .build();
+        Trajectory forwardToHub2 = drive.trajectoryBuilder(allignWithHub.end())
+                .forward(25)
+
+                .build();
+
+
+       /* TrajectorySequence parkWarehouse = drive.trajectorySequenceBuilder(parkStorage.end())
+                .strafeLeft(5)
+                .lineToSplineHeading(new Pose2d(0,0,Math.toRadians(-90)))
+                .forward(80)
+                .build();*/
+        //
 
         //x -9  y 7
 
@@ -166,32 +137,90 @@ public class auto_bluext extends LinearOpMode {
             //telemetry.addData("Zona", pipeline.getZone());
             cuva.setPosition(0.09);
 
+            left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
+            right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
 
+            if (left_avg <= 125)
+                zone = 1;
+            else if (right_avg <= 125)
+                zone = 2;
+            else
+                zone = 3;
 
-                left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
-                right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
-
-                if (left_avg <= 125)
-                    zone = 1;
-                else if (right_avg <= 125)
-                    zone = 2;
-                else
-                    zone = 3;
-
-                telemetry.addData("Zone", zone);
-                telemetry.addData("Left", left_avg);
-                telemetry.addData("Right", right_avg);
+            telemetry.addData("Zone", zone);
+            telemetry.addData("Left", left_avg);
+            telemetry.addData("Right", right_avg);
 
             telemetry.update();
         }
         slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        Pose2d endPose = turnToShipLevel1.end();
+        if (!opModeIsActive()) return;
 
-        if (opModeIsActive()) {
-
-            drive.followTrajectory(turnDuck);
-
+        drive.followTrajectory(turnDuck);
+        runtime2.reset();
+        while(runtime2.time()<3)
+        {
+            carusel.setPower(0.4);
         }
+        carusel.setPower(0);
+        sleep(500);
+        drive.followTrajectory(allignWithHub);
+        sleep(500);
+
+        switch (zone)
+        {
+            case 1:
+                slider.setTargetPosition(-200);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slider.setPower(0.6);
+                rotire.setPosition(0.95);
+
+                break;
+            case 2:
+                slider.setTargetPosition(-1200);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                slider.setPower(0.6);
+                rotire.setPosition(0.95);
+                break;
+
+            case 3:
+                slider.setTargetPosition(-1500);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                slider.setPower(0.6);
+                rotire.setPosition(0.75);
+                break;
+        }
+        sleep(2000);
+        if(zone==1) drive.followTrajectory(forwardToHub2);
+        else drive.followTrajectory(forwardToHub);
+
+        cuva.setPosition(0.5); // drop cube
+
+        sleep(800);
+        cuva.setPosition(0.09);
+        sleep(200);
+        Pose2d final_pose=drive.getPoseEstimate();
+
+        TrajectorySequence parkStorage = drive.trajectorySequenceBuilder(final_pose)
+                .lineToLinearHeading(new Pose2d(-40,28,Math.toRadians(-90)))
+                .addTemporalMarker(0.1,()->{
+                    slider.setTargetPosition(0);
+                    slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                    slider.setPower(-0.7);
+                    rotire.setPosition(0);
+                })
+
+                .build();
+        Trajectory endTraj = drive.trajectoryBuilder(parkStorage.end())
+                .lineToLinearHeading(new Pose2d(-24,26,Math.toRadians(-90)))
+                .build();
+        drive.followTrajectorySequence(parkStorage);
+        drive.followTrajectory(endTraj);
+        //drive.followTrajectorySequence(parkWarehouse);
     }
 }

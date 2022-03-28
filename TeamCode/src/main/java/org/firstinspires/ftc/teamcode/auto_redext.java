@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.advanced.DetectionPipeline;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -61,6 +62,7 @@ public class auto_redext extends LinearOpMode {
 
 
 
+
         pipeline = new SamplePipeline();
         detectionPipeline = new DetectionPipeline();
         webcam.setPipeline(detectionPipeline);
@@ -70,30 +72,36 @@ public class auto_redext extends LinearOpMode {
 
 
 
-        //----------------------------------------------------------------------------------------------
 
-        //traiectorii blueside extern
         Pose2d startPose = new Pose2d(0, 0, 0);
+
         drive.setPoseEstimate(startPose);
 
-        Trajectory turnToShipLevel3 = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-9,4,Math.toRadians(-210)))
+        Trajectory turnDuck = drive.trajectoryBuilder(startPose)
+                .lineToSplineHeading(new Pose2d(-1,-20,Math.toRadians(-90)))
                 .build();
 
-        Trajectory turnToShipLevel2 = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-15,15,Math.toRadians(-210)))
-                .addTemporalMarker(0.1,()->{
-                    rotire.setPosition(0.15);
-                })
+        Trajectory allignWithHub = drive.trajectoryBuilder(turnDuck.end())
+                .lineToSplineHeading(new Pose2d(-40,-20,Math.toRadians(90)))
                 .build();
 
-        Trajectory turnToShipLevel1 = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-16,15,Math.toRadians(-210)))
-                .addTemporalMarker(0.1,()->{
-                    rotire.setPosition(0.1);
-                })
+
+        Trajectory forwardToHub = drive.trajectoryBuilder(allignWithHub.end())
+                .forward(15)
                 .build();
 
+        TrajectorySequence parkStorage = drive.trajectorySequenceBuilder(forwardToHub.end())
+                .back(15)
+                .strafeRight(15)
+                .build();
+
+
+        TrajectorySequence parkWarehouse = drive.trajectorySequenceBuilder(parkStorage.end())
+                .strafeRight(5)
+                .lineToSplineHeading(new Pose2d(0,0,Math.toRadians(90)))
+                .forward(80)
+                .build();
+        //
 
         //x -9  y 7
 
@@ -123,168 +131,74 @@ public class auto_redext extends LinearOpMode {
 
         detectionPipeline.setGridSize(2);
 
-        sleep(5000);
         double left_avg,right_avg;
 
         int zone = 0;
-
+        sleep(5000);
         while (!opModeIsActive() && !isStopRequested()) {
             //telemetry.addData("Zona", pipeline.getZone());
             cuva.setPosition(0.09);
-            rotire.setPosition(1);
 
-                sleep(500);
-                left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
-                right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
+            left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
+            right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
 
-                if (left_avg <= 125)
-                    zone = 1;
-                else if (right_avg <= 125)
-                    zone = 2;
-                else
-                    zone = 3;
+            if (left_avg <= 125)
+                zone = 2;
+            else if (right_avg <= 125)
+                zone = 3;
+            else
+                zone = 1;
 
-                telemetry.addData("Zone", zone);
-                telemetry.addData("Left", left_avg);
-                telemetry.addData("Right", right_avg);
+            telemetry.addData("Zone", zone);
+            telemetry.addData("Left", left_avg);
+            telemetry.addData("Right", right_avg);
 
             telemetry.update();
         }
         slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        Pose2d endPose = turnToShipLevel1.end();
+        if (!opModeIsActive()) return;
 
-        if (opModeIsActive()) {
-            if (zone == 1 || zone == 0) {
-                drive.followTrajectory(turnToShipLevel1);
+        drive.followTrajectory(turnDuck);
+        sleep(500);
+        drive.followTrajectory(allignWithHub);
+        sleep(500);
 
+        switch (zone)
+        {
+            case 1:
+                slider.setTargetPosition(-200);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slider.setPower(0.6);
+                rotire.setPosition(0.95);
 
-
-                sleep(500);
-                cuva.setPosition(0.5);
-                sleep(1000);
-
-                rotire.setPosition(1);
-
-                sleep(500);
-                endPose = turnToShipLevel1.end();
-            }
-            if (zone == 2) {
-                drive.followTrajectory(turnToShipLevel2);
-
-
-                sleep(500);
-                cuva.setPosition(0.5);
-                sleep(1000);
-
-                rotire.setPosition(1);
-
-                sleep(500);
-
-                endPose = turnToShipLevel2.end();
-            }
-            if (zone == 3) {
-                drive.followTrajectory(turnToShipLevel3);
-
-                endPose = turnToShipLevel3.end();
-
-
+                break;
+            case 2:
                 slider.setTargetPosition(-1200);
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                slider.setPower(0.7);
 
-                rotire.setPosition(0.2);
+                slider.setPower(0.6);
+                rotire.setPosition(0.95);
+                break;
 
-                while(slider.isBusy())
-                {
-
-                }
-                sleep(500);
-                cuva.setPosition(0.5);
-
-                sleep(1000);
-
-                slider.setTargetPosition(-100);
+            case 3:
+                slider.setTargetPosition(-1500);
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                slider.setPower(-0.7);
-                rotire.setPosition(1);
 
-                sleep(500);
-            }
-            cuva.setPosition(0.09);
-            sleep(500);
-
-            Trajectory turnDuck = drive.trajectoryBuilder(endPose)
-                    .lineToSplineHeading(new Pose2d(-7,-22,Math.toRadians(180)))
-                    .addTemporalMarker(0.1,()->{
-                        slider.setTargetPosition(0);
-                        slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                        slider.setPower(-0.7);
-                    })
-                    .build();
-
-            Trajectory toStorage = drive.trajectoryBuilder(turnDuck.end())
-                    //.lineToSplineHeading(new Pose2d(-30,-18,Math.toRadians(180)))
-                    .lineToSplineHeading(new Pose2d(-30,-20,Math.toRadians(180)))
-                    .build();
-
-
-            drive.followTrajectory(turnDuck);
-
-            runtime2.reset();
-            while (runtime2.time() < 4) {
-
-                carusel.setPower(-0.35);
-
-            }
-            carusel.setPower(0);
-
-            webcam.setPipeline(detectionPipeline);
-            detectionPipeline.setGridSize(7);
-
-            sleep(1000);
-           /* drive.followTrajectory(toStorage);*/
-
-            final double degrees = 3.5; // should be 3.5 but put it to 4 due to wheel error
-
-            int duckZone = detectionPipeline.getDuckZone();
-            int column = detectionPipeline.getColumn(duckZone);
-
-            int degreesMult = column - 5;
-
-            /*Trajectory pickupDuck = drive.trajectoryBuilder(toStorage.end())
-                    .lineToSplineHeading(new Pose2d(-29,-18,Math.toRadians(180-degrees*degreesMult)))
-                    .build();
-            Trajectory goDuck = drive.trajectoryBuilder(pickupDuck.end())
-                    .back(28)
-                    .build();
-
-            drive.followTrajectory(pickupDuck);
-            sleep(200);
-            drive.followTrajectory(goDuck);
-
-
-
-            sleep(500);
-
-            if(color.red() > 30 && color.green() > 30) {
-                cuva.setPosition(0.09);
-                intake.setPower(0);
-                //traiectorie spre ship
-            }
-            else*/
-            Trajectory goPark = drive.trajectoryBuilder(turnDuck.end())
-                    .lineToSplineHeading(new Pose2d(-28,-25,Math.toRadians(90)))
-                    .build();
-            drive.followTrajectory(goPark);
-
-            telemetry.addData("Degree", degrees * degreesMult);
-            telemetry.addData("Zone",duckZone);
-            telemetry.update();
-            sleep(1000);
-
-
-
+                slider.setPower(0.6);
+                rotire.setPosition(0.75);
+                break;
         }
+        sleep(2000);
+
+        drive.followTrajectory(forwardToHub);
+
+        cuva.setPosition(0.5); // drop cube
+
+        sleep(800);
+
+        drive.followTrajectorySequence(parkStorage);
+
+        //drive.followTrajectorySequence(parkWarehouse);
     }
 }

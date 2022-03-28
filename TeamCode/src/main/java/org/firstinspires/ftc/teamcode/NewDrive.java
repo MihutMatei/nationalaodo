@@ -178,15 +178,8 @@
                  slider.setTargetPosition(-1500);
                  slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-
-
-
-
                  slider.setPower(0.6);
                  rotire.setPosition(0.75);
-
-
-
 
              }
              if(gamepad2.square)
@@ -194,24 +187,13 @@
                  slider.setTargetPosition(-1200);
                  slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-
-
-
-
                  slider.setPower(0.6);
                  rotire.setPosition(0.95);
-
-
              }
              if(gamepad2.circle)
              {
                  slider.setTargetPosition(-200);
                  slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-
-
-
-
                  slider.setPower(0.6);
                  rotire.setPosition(0.95);
 
@@ -226,7 +208,7 @@
 
 
                  slider.setPower(-0.7);
-                 rotire.setPosition(0.04);
+                 rotire.setPosition(0.02);
 
 
              }
