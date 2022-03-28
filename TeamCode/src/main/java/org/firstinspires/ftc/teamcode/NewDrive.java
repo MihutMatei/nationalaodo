@@ -180,6 +180,7 @@
 
                  slider.setPower(0.6);
                  rotire.setPosition(0.75);
+                 
 
              }
              if(gamepad2.square)
