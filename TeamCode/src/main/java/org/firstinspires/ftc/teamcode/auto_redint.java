@@ -24,7 +24,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.firstinspires.ftc.teamcode.drive.advanced.SamplePipeline;
-@Autonomous(name = "AUTONOMOUS_redint")
+@Autonomous(name = "REDINT")
 public class auto_redint extends LinearOpMode {
     OpenCvCamera webcam;
     SamplePipeline pipeline;

@@ -31,7 +31,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import org.firstinspires.ftc.teamcode.drive.advanced.SamplePipeline;
 import org.firstinspires.ftc.teamcode.drive.advanced.DetectionPipeline;
 
-@Autonomous(name = "AUTONOMOUS_bluext")
+@Autonomous(name = "BLUEXT")
 public class auto_bluext extends LinearOpMode {
     OpenCvCamera webcam;
     SamplePipeline pipeline;

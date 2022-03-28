@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.advanced.DetectionPipeline;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -30,7 +31,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import org.firstinspires.ftc.teamcode.drive.advanced.SamplePipeline;
 import org.firstinspires.ftc.teamcode.drive.advanced.DetectionPipeline;
 
-@Autonomous(name = "AUTONOMOUS_redext")
+@Autonomous(name = "REDEXT")
 public class auto_redext extends LinearOpMode {
     OpenCvCamera webcam;
     SamplePipeline pipeline;
@@ -70,37 +71,34 @@ public class auto_redext extends LinearOpMode {
 
         ElapsedTime runtime2 = new ElapsedTime(0);
 
-
-
-
         Pose2d startPose = new Pose2d(0, 0, 0);
 
         drive.setPoseEstimate(startPose);
 
         Trajectory turnDuck = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(-1,-20,Math.toRadians(-90)))
+                .lineToSplineHeading(new Pose2d(-10,-25,Math.toRadians(180)))
                 .build();
 
         Trajectory allignWithHub = drive.trajectoryBuilder(turnDuck.end())
-                .lineToSplineHeading(new Pose2d(-40,-20,Math.toRadians(90)))
+                .lineToSplineHeading(new Pose2d(-45,-25,Math.toRadians(90)))
                 .build();
 
 
         Trajectory forwardToHub = drive.trajectoryBuilder(allignWithHub.end())
-                .forward(15)
+                .forward(21)
+
+                .build();
+        Trajectory forwardToHub2 = drive.trajectoryBuilder(allignWithHub.end())
+                .forward(27)
+
                 .build();
 
-        TrajectorySequence parkStorage = drive.trajectorySequenceBuilder(forwardToHub.end())
-                .back(15)
-                .strafeRight(15)
-                .build();
 
-
-        TrajectorySequence parkWarehouse = drive.trajectorySequenceBuilder(parkStorage.end())
-                .strafeRight(5)
-                .lineToSplineHeading(new Pose2d(0,0,Math.toRadians(90)))
+       /* TrajectorySequence parkWarehouse = drive.trajectorySequenceBuilder(parkStorage.end())
+                .strafeLeft(5)
+                .lineToSplineHeading(new Pose2d(0,0,Math.toRadians(-90)))
                 .forward(80)
-                .build();
+                .build();*/
         //
 
         //x -9  y 7
@@ -143,11 +141,11 @@ public class auto_redext extends LinearOpMode {
             right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
 
             if (left_avg <= 125)
-                zone = 2;
-            else if (right_avg <= 125)
-                zone = 3;
-            else
                 zone = 1;
+            else if (right_avg <= 125)
+                zone = 2;
+            else
+                zone = 3;
 
             telemetry.addData("Zone", zone);
             telemetry.addData("Left", left_avg);
@@ -160,6 +158,12 @@ public class auto_redext extends LinearOpMode {
         if (!opModeIsActive()) return;
 
         drive.followTrajectory(turnDuck);
+        runtime2.reset();
+        while(runtime2.time()<5)
+        {
+            carusel.setPower(-0.45);
+        }
+        carusel.setPower(0);
         sleep(500);
         drive.followTrajectory(allignWithHub);
         sleep(500);
@@ -190,15 +194,33 @@ public class auto_redext extends LinearOpMode {
                 break;
         }
         sleep(2000);
-
-        drive.followTrajectory(forwardToHub);
+        if(zone==1) drive.followTrajectory(forwardToHub2);
+        else drive.followTrajectory(forwardToHub);
 
         cuva.setPosition(0.5); // drop cube
 
         sleep(800);
+        cuva.setPosition(0.09);
+        sleep(200);
+        Pose2d final_pose=drive.getPoseEstimate();
 
+        TrajectorySequence parkStorage = drive.trajectorySequenceBuilder(final_pose)
+                .lineToLinearHeading(new Pose2d(-40,-28,Math.toRadians(90)))
+                .addTemporalMarker(0.1,()->{
+                    slider.setTargetPosition(0);
+                    slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+                    slider.setPower(-0.7);
+                    rotire.setPosition(0);
+                })
+
+                .build();
+        Trajectory endTraj = drive.trajectoryBuilder(parkStorage.end())
+                .lineToLinearHeading(new Pose2d(-30,-30,Math.toRadians(90)))
+                .build();
         drive.followTrajectorySequence(parkStorage);
-
+        drive.followTrajectory(endTraj);
         //drive.followTrajectorySequence(parkWarehouse);
     }
 }
