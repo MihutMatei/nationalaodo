@@ -40,7 +40,7 @@ public class auto_bluext extends LinearOpMode {
     private DcMotorEx intake;
     private DcMotor carusel;
     private Servo cuva;
-    private Servo rotire;
+    private DcMotorEx rotire;
     boolean bCameraOpened = false;
     private ColorSensor color;
 
@@ -56,10 +56,11 @@ public class auto_bluext extends LinearOpMode {
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         carusel = hardwareMap.get(DcMotor.class, "carusel");
         cuva = hardwareMap.get(Servo.class,"cuva");
-        rotire = hardwareMap.get(Servo.class,"rotire");
+        rotire = hardwareMap.get(DcMotorEx.class,"rotire");
         color = hardwareMap.get(ColorSensor.class, "color");
 
         carusel.setDirection(DcMotorSimple.Direction.REVERSE);
+        rotire.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
 
@@ -85,11 +86,11 @@ public class auto_bluext extends LinearOpMode {
 
 
         Trajectory forwardToHub = drive.trajectoryBuilder(allignWithHub.end())
-                .forward(15)
+                .forward(17)
 
                 .build();
         Trajectory forwardToHub2 = drive.trajectoryBuilder(allignWithHub.end())
-                .forward(25)
+                .forward(27)
 
                 .build();
 
@@ -174,7 +175,9 @@ public class auto_bluext extends LinearOpMode {
                 slider.setTargetPosition(-200);
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 slider.setPower(0.6);
-                rotire.setPosition(0.95);
+                rotire.setTargetPosition(-1800);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
 
                 break;
             case 2:
@@ -182,7 +185,9 @@ public class auto_bluext extends LinearOpMode {
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                 slider.setPower(0.6);
-                rotire.setPosition(0.95);
+                rotire.setTargetPosition(-1850);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
                 break;
 
             case 3:
@@ -190,11 +195,20 @@ public class auto_bluext extends LinearOpMode {
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                 slider.setPower(0.6);
-                rotire.setPosition(0.75);
+                rotire.setTargetPosition(-1550);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
                 break;
         }
         sleep(2000);
-        if(zone==1) drive.followTrajectory(forwardToHub2);
+        if(zone==1) {
+            slider.setTargetPosition(0);
+            slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            slider.setPower(-0.3);
+            sleep(500);
+            drive.followTrajectory(forwardToHub2);
+
+        }
         else drive.followTrajectory(forwardToHub);
 
         cuva.setPosition(0.5); // drop cube
@@ -204,20 +218,34 @@ public class auto_bluext extends LinearOpMode {
         sleep(200);
         Pose2d final_pose=drive.getPoseEstimate();
 
+        int finalZone = zone;
         TrajectorySequence parkStorage = drive.trajectorySequenceBuilder(final_pose)
                 .lineToLinearHeading(new Pose2d(-40,28,Math.toRadians(-90)))
+                .addTemporalMarker(0.5,()->{
+                    if(finalZone==1||finalZone==2) {
+                        slider.setTargetPosition(-1500);
+                        slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                        slider.setPower(0.6);
+                        rotire.setTargetPosition(-1550);
+                        rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                        rotire.setPower(-0.8);
+                    }
+                })
+
+                .build();
+        Trajectory endTraj = drive.trajectoryBuilder(parkStorage.end())
+                .lineToLinearHeading(new Pose2d(-24,28,Math.toRadians(90)))
                 .addTemporalMarker(0.1,()->{
                     slider.setTargetPosition(0);
                     slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
                     slider.setPower(-0.7);
-                    rotire.setPosition(0);
+                    rotire.setTargetPosition(5);
+                    rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rotire.setPower(0.8);
                 })
-
-                .build();
-        Trajectory endTraj = drive.trajectoryBuilder(parkStorage.end())
-                .lineToLinearHeading(new Pose2d(-24,26,Math.toRadians(-90)))
                 .build();
         drive.followTrajectorySequence(parkStorage);
         drive.followTrajectory(endTraj);
