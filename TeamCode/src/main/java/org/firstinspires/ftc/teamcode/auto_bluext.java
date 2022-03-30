@@ -220,7 +220,7 @@ public class auto_bluext extends LinearOpMode {
 
         int finalZone = zone;
         TrajectorySequence parkStorage = drive.trajectorySequenceBuilder(final_pose)
-                .lineToLinearHeading(new Pose2d(-40,28,Math.toRadians(-90)))
+                .lineToLinearHeading(new Pose2d(-40,18,Math.toRadians(180)))
                 .addTemporalMarker(0.5,()->{
                     if(finalZone==1||finalZone==2) {
                         slider.setTargetPosition(-1500);
@@ -248,6 +248,32 @@ public class auto_bluext extends LinearOpMode {
                 })
                 .build();
         drive.followTrajectorySequence(parkStorage);
+
+      /*  detectionPipeline.setGridSize(7);
+        sleep(100);
+        int duckZone = detectionPipeline.getDuckZone();
+        int duckColumn = detectionPipeline.getColumn(duckZone);
+        int degrees = -15;
+
+        Pose2d curPos = drive.getPoseEstimate();
+        drive.turn(degrees);
+        sleep(100);
+        while(opModeIsActive() && (duckColumn != 6 || duckColumn != 7) && degrees <= 15)
+        {
+            drive.turn(Math.toDegrees(curPos.getHeading()) + 1);
+
+            sleep(200);
+
+            duckZone = detectionPipeline.getDuckZone();
+            duckColumn = detectionPipeline.getColumn(duckZone);
+
+            telemetry.addData("DuckZone" , duckZone);
+            telemetry.addData("DuckCol" , duckColumn);
+
+            degrees++;
+        }
+        while(duckColumn == 6 && duckColumn == 7 && opModeIsActive())
+            telemetry.addData("FOUND", "HURAAA");*/
         drive.followTrajectory(endTraj);
         //drive.followTrajectorySequence(parkWarehouse);
     }

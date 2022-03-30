@@ -37,7 +37,7 @@ public class auto_blueint extends LinearOpMode {
     private DcMotorEx intake;
     private DcMotor carusel;
     private Servo cuva;
-    private Servo rotire;
+    private DcMotorEx rotire;
     boolean bCameraOpened = false;
     private ColorSensor color;
 
@@ -53,7 +53,7 @@ public class auto_blueint extends LinearOpMode {
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         carusel = hardwareMap.get(DcMotor.class, "carusel");
         cuva = hardwareMap.get(Servo.class,"cuva");
-        rotire = hardwareMap.get(Servo.class,"rotire");
+        rotire = hardwareMap.get(DcMotorEx.class,"rotire");
         color = hardwareMap.get(ColorSensor.class, "color");
 
         carusel.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -79,20 +79,20 @@ public class auto_blueint extends LinearOpMode {
         Pose2d startPose = new Pose2d(0, 0, 0);
 
         drive.setPoseEstimate(startPose);
-
+        int compensare=1;
         Trajectory allignWithHub = drive.trajectoryBuilder(startPose)
                 .lineToSplineHeading(new Pose2d(-5,5,Math.toRadians(150)))
 
                 .build();
 
         Trajectory forwardToHub = drive.trajectoryBuilder(allignWithHub.end())
-                .forward(12)
+                .forward(12+compensare)
 
                 .build();
 
         TrajectorySequence goToWarehouse = drive.trajectorySequenceBuilder(forwardToHub.end())
                 .lineToSplineHeading(new Pose2d(3.5,0,Math.toRadians(90)))
-                .back(35)
+                .back(25)
                 .addTemporalMarker(0.1, ()->
                 { // intake
                     intake.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -102,6 +102,11 @@ public class auto_blueint extends LinearOpMode {
 
         TrajectorySequence backward = drive.trajectorySequenceBuilder(forwardToHub.end())
                 .lineToSplineHeading(new Pose2d(0,0,Math.toRadians(90)))
+                .build();
+        TrajectorySequence allignTofield = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                .lineToSplineHeading(new Pose2d(3.5,-30,Math.toRadians(90)))
+
+
                 .build();
 
         detectionPipeline.setGridSize(2);
@@ -135,22 +140,27 @@ public class auto_blueint extends LinearOpMode {
         if (!opModeIsActive()) return;
 
         drive.followTrajectory(allignWithHub);
-        sleep(500);
+        sleep(300);
         switch (zone)
         {
             case 1:
                 slider.setTargetPosition(-200);
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 slider.setPower(0.6);
-                rotire.setPosition(0.95);
-
+                rotire.setTargetPosition(-1800);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
+                compensare=15;
                 break;
             case 2:
                 slider.setTargetPosition(-1200);
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                 slider.setPower(0.6);
-                rotire.setPosition(0.95);
+                rotire.setTargetPosition(-1800);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
+                compensare=0;
                 break;
 
             case 3:
@@ -158,63 +168,146 @@ public class auto_blueint extends LinearOpMode {
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                 slider.setPower(0.6);
-                rotire.setPosition(0.75);
+                rotire.setTargetPosition(-1550);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
+                compensare=0;
                 break;
         }
 
-        sleep(2000);
+        sleep(300);
 
         int counter = 0;
+        ElapsedTime runtime = new ElapsedTime(0);;
+        runtime.startTime();
         while(opModeIsActive()) {
-            if(counter > 0)
+            Pose2d curPos = drive.getPoseEstimate();
+
+            allignWithHub = drive.trajectoryBuilder(drive.getPoseEstimate())
+                    .lineToSplineHeading(new Pose2d(-5, 5, Math.toRadians(150)))
+
+                    .build();
+
+            if (counter > 0) {
+                drive.followTrajectory(allignWithHub);
+
+                slider.setTargetPosition(-1500);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                slider.setPower(0.6);
+                rotire.setTargetPosition(-1550);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
+
+
+                forwardToHub = drive.trajectoryBuilder(drive.getPoseEstimate())
+                        .forward(8.5 - counter * 1.5)
+                        .build();
+
+            }
+            if (zone == 1 && counter == 0) {
+                slider.setTargetPosition(-100);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slider.setPower(-0.3);
+                forwardToHub = drive.trajectoryBuilder(drive.getPoseEstimate())
+                        .forward(8.5 - counter * 1.5 + compensare)
+                        .build();
+            }
 
             drive.followTrajectory(forwardToHub);
 
             cuva.setPosition(0.5); // drop cube
 
-            sleep(800);
-
             intake.setPower(0);
 
-            sleep(500);
+            sleep(700);
 
             slider.setTargetPosition(-50);
             slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
             slider.setPower(-0.7);
-            rotire.setPosition(0.03);
+            rotire.setTargetPosition(0);
+            rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rotire.setPower(0.6);
 
-            sleep(800);
+            sleep(700);
+
+            goToWarehouse = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    .lineToSplineHeading(new Pose2d(3.5 + counter * 2 + compensare / 3, 0, Math.toRadians(90)))
+                    .back(29)
+                    .addTemporalMarker(0.1, () ->
+                    { // intake
+                        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+                        intake.setPower(0.5);
+                    })
+                    .build();
 
             drive.followTrajectorySequence(goToWarehouse);
-            sleep(800);
-            /// cod wack
 
-            intake.setDirection(DcMotorSimple.Direction.REVERSE);
-            intake.setPower(0.35);
+//            if(counter == 1 && runtime.time() > 23)
+//                break;
+            if(counter==0)
+            {
+            boolean breakfrom = false;
 
-            while (opModeIsActive()) {
-                if (color.red() > 30 && color.green() > 30) {
-                    cuva.setPosition(0.09);
-                    intake.setDirection(DcMotorSimple.Direction.FORWARD);
-                    intake.setPower(0.4);
-                    break;
-                }
-
+            while (opModeIsActive() && !breakfrom) {
                 drive.setWeightedDrivePower(
                         new Pose2d(
-                                -0.2,
+                                -0.1,
                                 0,
                                 0
                         )
                 );
+
                 drive.update();
+                int c = 0;
+                while (c < 25) {
+                    if (color.red() > 30 && color.green() > 30) {
+                        cuva.setPosition(0.09);
+                        intake.setDirection(DcMotorSimple.Direction.FORWARD);
+                        intake.setPower(0.7);
+                        breakfrom = true;
+                        break;
+                    }
+                    sleep(10);
+                    c++;
+                }
             }
-            sleep(300);
             intake.setPower(0);
 
-            drive.followTrajectorySequence(backward);
+            drive.setWeightedDrivePower(
+                    new Pose2d(
+                            0,
+                            0,
+                            0
+                    )
+            );
+
+
+            backward = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    .forward(Math.abs(drive.getPoseEstimate().getY()))
+                    .build();
+
+
+
+                drive.followTrajectorySequence(backward);
         }
+
+            if(counter==1)
+            {    intake.setPower(0);
+                //traiectorie
+
+                TrajectorySequence endtraj=drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                        .strafeLeft(28)
+                        .turn(Math.toRadians(90))
+                        .strafeLeft(25)
+                        .build();
+                drive.followTrajectorySequence(endtraj);
+                break;
+            }
+            counter++;
+        }
+
     }
 }

@@ -40,7 +40,7 @@ public class auto_redext extends LinearOpMode {
     private DcMotorEx intake;
     private DcMotor carusel;
     private Servo cuva;
-    private Servo rotire;
+    private DcMotorEx rotire;
     boolean bCameraOpened = false;
     private ColorSensor color;
 
@@ -56,7 +56,7 @@ public class auto_redext extends LinearOpMode {
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         carusel = hardwareMap.get(DcMotor.class, "carusel");
         cuva = hardwareMap.get(Servo.class,"cuva");
-        rotire = hardwareMap.get(Servo.class,"rotire");
+        rotire = hardwareMap.get(DcMotorEx.class,"rotire");
         color = hardwareMap.get(ColorSensor.class, "color");
 
         carusel.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -168,13 +168,16 @@ public class auto_redext extends LinearOpMode {
         drive.followTrajectory(allignWithHub);
         sleep(500);
 
+
         switch (zone)
         {
             case 1:
                 slider.setTargetPosition(-200);
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 slider.setPower(0.6);
-                rotire.setPosition(1);
+                rotire.setTargetPosition(-1800);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
 
                 break;
             case 2:
@@ -182,7 +185,9 @@ public class auto_redext extends LinearOpMode {
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                 slider.setPower(0.6);
-                rotire.setPosition(1);
+                rotire.setTargetPosition(-1850);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
                 break;
 
             case 3:
@@ -190,9 +195,12 @@ public class auto_redext extends LinearOpMode {
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                 slider.setPower(0.6);
-                rotire.setPosition(0.75);
+                rotire.setTargetPosition(-1550);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
                 break;
         }
+
         sleep(2000);
         if(zone==1) drive.followTrajectory(forwardToHub2);
         else drive.followTrajectory(forwardToHub);
@@ -205,21 +213,34 @@ public class auto_redext extends LinearOpMode {
         Pose2d final_pose=drive.getPoseEstimate();
 
         TrajectorySequence parkStorage = drive.trajectorySequenceBuilder(final_pose)
-                .lineToLinearHeading(new Pose2d(-40,-28,Math.toRadians(90)))
-                .addTemporalMarker(0.1,()->{
+                .lineToLinearHeading(new Pose2d(-40,-20,Math.toRadians(90)))
+                .addTemporalMarker(0.5,()->{
+                    slider.setTargetPosition(-1500);
+                    slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    slider.setPower(0.6);
+                    rotire.setTargetPosition(-1300);
+                    rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rotire.setPower(-0.8);
+
+                })
+                .addTemporalMarker(1.3,()->{
                     slider.setTargetPosition(0);
                     slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
                     slider.setPower(-0.7);
-                    rotire.setPosition(0);
+                    rotire.setTargetPosition(5);
+                    rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rotire.setPower(0.6);
                 })
 
                 .build();
         Trajectory endTraj = drive.trajectoryBuilder(parkStorage.end())
-                .lineToLinearHeading(new Pose2d(-30,-30,Math.toRadians(90)))
+                .lineToLinearHeading(new Pose2d(-32,-26,Math.toRadians(-90)))
                 .build();
         drive.followTrajectorySequence(parkStorage);
+        sleep(1500);
         drive.followTrajectory(endTraj);
         //drive.followTrajectorySequence(parkWarehouse);
     }

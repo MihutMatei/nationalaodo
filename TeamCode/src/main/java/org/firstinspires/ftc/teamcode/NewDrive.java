@@ -214,7 +214,7 @@
 
 
                  slider.setPower(-0.7);
-                 rotire.setTargetPosition(5);
+                 rotire.setTargetPosition(-30);
                  rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                  rotire.setPower(0.8);
 

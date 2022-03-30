@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDriveCancelable;
+import org.firstinspires.ftc.teamcode.drive.advanced.DetectionPipeline;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -13,6 +16,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.advanced.SamplePipeline;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -23,313 +28,284 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
-import org.firstinspires.ftc.teamcode.drive.advanced.SamplePipeline;
 @Autonomous(name = "REDINT")
 public class auto_redint extends LinearOpMode {
     OpenCvCamera webcam;
     SamplePipeline pipeline;
-    private DcMotorEx cremaliera;
-    private DcMotorEx cascade;
-    private Servo intake_servo;
+    DetectionPipeline detectionPipeline;
+    private DcMotorEx slider;
     private DcMotorEx intake;
     private DcMotor carusel;
-    private CRServo ruleta;
-    private CRServo ruleta_x;
-    private CRServo ruleta_z;
-    static int zona=0;
+    private Servo cuva;
+    private DcMotorEx rotire;
+    boolean bCameraOpened = false;
+    private ColorSensor color;
 
+    //unfinished
 
     @Override
     public void runOpMode() {
-        SampleMecanumDrive drive =new SampleMecanumDrive(hardwareMap);
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        cremaliera =hardwareMap.get(DcMotorEx.class,"cremaliera");
-        cascade =hardwareMap.get(DcMotorEx.class,"cascade");
-/*
-        intake_servo =hardwareMap.get(Servo.class,"intake_servo");
-*/
-        intake =hardwareMap.get(DcMotorEx.class,"intake");
-        carusel=hardwareMap.get(DcMotor.class, "carusel");
-        //ruleta =hardwareMap.get(CRServo.class,"ruleta");
-        // ruleta_x =hardwareMap.get(CRServo.class,"ruleta_x");
-        //   ruleta_z =hardwareMap.get(CRServo.class,"ruleta_z");
 
+        slider = hardwareMap.get(DcMotorEx.class, "slider");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
+        carusel = hardwareMap.get(DcMotor.class, "carusel");
+        cuva = hardwareMap.get(Servo.class,"cuva");
+        rotire = hardwareMap.get(DcMotorEx.class,"rotire");
+        color = hardwareMap.get(ColorSensor.class, "color");
 
         carusel.setDirection(DcMotorSimple.Direction.REVERSE);
-        cascade.setDirection(DcMotorSimple.Direction.REVERSE);
-
-
 
         pipeline = new SamplePipeline();
-        webcam.setPipeline(pipeline);
+        detectionPipeline = new DetectionPipeline();
+        webcam.setPipeline(detectionPipeline);
         drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        ElapsedTime runtime1 = new ElapsedTime(0);
-        ElapsedTime runtime2 = new ElapsedTime(0);
-        ElapsedTime runtime3 = new ElapsedTime(0);
-        ElapsedTime runtime4 = new ElapsedTime(0);
 
-
-        //----------------------------------------------------------------------------------------------
-
-        //traiectorii redside intern
-        Pose2d startPose= new Pose2d(0,0,0);
-        drive.setPoseEstimate(startPose);
-        Trajectory f1 = drive.trajectoryBuilder(startPose)
-                .lineToSplineHeading(new Pose2d(25.5,18,Math.toRadians(14)))
-                .build();
-        Trajectory warehouse=drive.trajectoryBuilder(f1.end())
-                .lineToSplineHeading(new Pose2d(0,0,Math.toRadians(-90)))
-                .addTemporalMarker(0.1,()->
-                {   cremaliera.setTargetPosition(-20);
-                    cremaliera.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    cremaliera.setVelocity(3000);
-                    intake.setDirection(DcMotorSimple.Direction.REVERSE);
-                    intake.setPower(0.7);
-
-                })
-                .build();
-        Trajectory f2=drive.trajectoryBuilder(warehouse.end())
-                .forward(40)
-                .build();
-        Trajectory ia_bila_cub = drive.trajectoryBuilder(f2.end())
-                .back(40)
-                .build();
-        Trajectory revers_card = drive.trajectoryBuilder(ia_bila_cub.end())
-                .lineToLinearHeading(new Pose2d(24.5, 18, Math.toRadians(0)))
-                .addTemporalMarker(0.1,()->
-                {
-                    cremaliera.setTargetPosition(-1800);
-                    cremaliera.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    cremaliera.setVelocity(3000);
-
-
-                })
-                .build();
-        Trajectory ionutz = drive.trajectoryBuilder(revers_card.end())
-                .lineToLinearHeading(new Pose2d(-0, 0, Math.toRadians(-90)))
-                .addTemporalMarker(0.1,()->
-                {
-//                    cascade.setTargetPosition(-20);
-//                    cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                    cascade.setPower(0.4);
-                    cremaliera.setTargetPosition(-20);
-                    cremaliera.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    cremaliera.setVelocity(3000);
-                    intake.setDirection(DcMotorSimple.Direction.REVERSE);
-                    intake.setPower(0.7);
-                })
-                .build();
-        //----------------------------------------------------------------------------------------------
-
-        Trajectory inapoi=drive.trajectoryBuilder(ionutz.end())
-                .forward(40)
-                .build();
-
-        Trajectory ia_bila_cub2 = drive.trajectoryBuilder(inapoi.end())
-                .back(40)
-                .build();
-        Trajectory revers_card2 = drive.trajectoryBuilder(ia_bila_cub2.end())
-                .lineToLinearHeading(new Pose2d(24.5, 16, Math.toRadians(0)))
-                .addTemporalMarker(0.1,()->
-                {
-                    cremaliera.setTargetPosition(-1800);
-                    cremaliera.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    cremaliera.setVelocity(3000);
-
-
-                })
-                .build();
-        Trajectory ionutz2 = drive.trajectoryBuilder(revers_card2.end())
-                .lineToLinearHeading(new Pose2d(-1, 7, Math.toRadians(-90)))
-                .addTemporalMarker(0.1,()->
-                {
-//                    cascade.setTargetPosition(-20);
-//                    cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                    cascade.setPower(0.4);
-                    cremaliera.setTargetPosition(-20);
-                    cremaliera.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    cremaliera.setVelocity(3000);
-                    intake.setDirection(DcMotorSimple.Direction.REVERSE);
-                    intake.setPower(0.7);
-                })
-                .build();
-
-        Trajectory inapoi2=drive.trajectoryBuilder(ionutz2.end())
-                .forward(50)
-                .build();
-        //----------------------------------------------------------------------------------------------
-
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
-            public void onOpened()
-            {
+            public void onOpened() {
+                bCameraOpened = true;
                 webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
-            public void onError(int errorCode)
-            {
+            public void onError(int errorCode) {
 
             }
         });
 
+        Pose2d startPose = new Pose2d(0, 0, 0);
 
+        drive.setPoseEstimate(startPose);
+        int compensare=1;
+        Trajectory allignWithHub = drive.trajectoryBuilder(startPose)
+                .lineToSplineHeading(new Pose2d(-5,-5,Math.toRadians(-150)))
+
+                .build();
+
+        Trajectory forwardToHub = drive.trajectoryBuilder(allignWithHub.end())
+                .forward(12+compensare)
+
+                .build();
+
+        TrajectorySequence goToWarehouse = drive.trajectorySequenceBuilder(forwardToHub.end())
+                .lineToSplineHeading(new Pose2d(3.5,0,Math.toRadians(90)))
+                .back(25)
+                .addTemporalMarker(0.1, ()->
+                { // intake
+                    intake.setDirection(DcMotorSimple.Direction.REVERSE);
+                    intake.setPower(0.7);
+                })
+                .build();
+
+        TrajectorySequence backward = drive.trajectorySequenceBuilder(forwardToHub.end())
+                .lineToSplineHeading(new Pose2d(0,0,Math.toRadians(90)))
+                .build();
+        TrajectorySequence allignTofield = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                .lineToSplineHeading(new Pose2d(3.5,30,Math.toRadians(-90)))
+
+
+                .build();
+
+        detectionPipeline.setGridSize(2);
+
+        double left_avg,right_avg;
+
+        int zone = 0;
+        sleep(5000);
         while (!opModeIsActive() && !isStopRequested()) {
-            telemetry.addData("Zona", pipeline.getZone());
+            //telemetry.addData("Zona", pipeline.getZone());
+            cuva.setPosition(0.09);
+
+            left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
+            right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
+
+            if (left_avg <= 125)
+                zone = 1;
+            else if (right_avg <= 125)
+                zone = 2;
+            else
+                zone = 3;
+
+            telemetry.addData("Zone", zone);
+            telemetry.addData("Left", left_avg);
+            telemetry.addData("Right", right_avg);
 
             telemetry.update();
         }
+        slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        int zone = pipeline.getZone();
+        if (!opModeIsActive()) return;
 
-
-        if(zone == 1 || zone == 0)
-        {   cremaliera.setTargetPosition(-1400);
-            cremaliera.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            cremaliera.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            cremaliera.setVelocity(3000);
-            while(cremaliera.isBusy())
-            {
-
-            }
-
-
-            cascade.setTargetPosition(-400);
-            cascade.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            cascade.setPower(1);
-            while (cascade.isBusy())
-            {
-
-            }
-            sleep(300);
-            intake.setDirection(DcMotorSimple.Direction.FORWARD);
-            intake.setPower(0.3);
-            sleep(600);
-            cascade.setTargetPosition(0);
-            cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            cascade.setPower(0.4);
-
-
-        }
-        if(zone == 2)
-        {
-            cremaliera.setTargetPosition(-2300);
-            cremaliera.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            cremaliera.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            cremaliera.setVelocity(3000);
-            while(cremaliera.isBusy()){
-
-            }
-            sleep(300);
-            cascade.setTargetPosition(-600);
-            cascade.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            cascade.setPower(1);
-            while (cascade.isBusy())
-            {
-
-            }
-
-            sleep(300);
-            intake.setDirection(DcMotorSimple.Direction.FORWARD);
-            intake.setPower(0.35);
-            sleep(600);
-            cascade.setTargetPosition(0);
-            cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            cascade.setPower(0.4);
-
-
-        }
-        if(zone == 3)
-        {
-            cremaliera.setTargetPosition(-3000);
-            cremaliera.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            cremaliera.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            cremaliera.setVelocity(3000);
-            while(cremaliera.isBusy()){
-
-            }
-            sleep(300);
-            cascade.setTargetPosition(-700);
-            cascade.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            cascade.setPower(1);
-            sleep(300);
-            while(cascade.isBusy())
-            {
-
-            }
-            sleep(300);
-            intake.setDirection(DcMotorSimple.Direction.FORWARD);
-            intake.setPower(0.7);
-            sleep(600);
-            cascade.setTargetPosition(0);
-            cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            cascade.setPower(0.4);
-        }
-
-
-        sleep(400);
-        intake.setDirection(DcMotorSimple.Direction.REVERSE);
-        intake.setPower(0);
-        drive.followTrajectory(warehouse);
+        drive.followTrajectory(allignWithHub);
         sleep(300);
-        drive.followTrajectory(f2);
-        sleep(300);
-        drive.followTrajectory(ia_bila_cub);
-        sleep(400);
-        drive.followTrajectory(revers_card);
-        cascade.setTargetPosition(-600);
-        cascade.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        cascade.setPower(1);
-        while(cascade.isBusy())
+        switch (zone)
         {
+            case 1:
+                slider.setTargetPosition(-200);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slider.setPower(0.6);
+                rotire.setTargetPosition(-1800);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
+                compensare=15;
+                break;
+            case 2:
+                slider.setTargetPosition(-1200);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+                slider.setPower(0.6);
+                rotire.setTargetPosition(-1800);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
+                compensare=0;
+                break;
+
+            case 3:
+                slider.setTargetPosition(-1500);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                slider.setPower(0.6);
+                rotire.setTargetPosition(-1550);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
+                compensare=0;
+                break;
         }
-        sleep(400);
-        intake.setDirection(DcMotorSimple.Direction.FORWARD);
-        intake.setPower(0.6);
-        sleep(600);
-        intake.setPower(0);
-        sleep(400);
-        cascade.setTargetPosition(-20);
-        cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        cascade.setPower(0.4);
-        sleep(200);
-        drive.followTrajectory(ionutz);
-        drive.followTrajectory(inapoi);
-        //---------------------------------------------------------------------
+
         sleep(300);
-        drive.followTrajectory(ia_bila_cub2);
-        sleep(400);
-        drive.followTrajectory(revers_card2);
-        cascade.setTargetPosition(-600);
-        cascade.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        cascade.setPower(1);
-        while(cascade.isBusy())
 
-        {
+        int counter = 0;
+        ElapsedTime runtime = new ElapsedTime(0);;
+        runtime.startTime();
+        while(opModeIsActive()) {
+            Pose2d curPos = drive.getPoseEstimate();
 
+            allignWithHub = drive.trajectoryBuilder(drive.getPoseEstimate())
+                    .lineToSplineHeading(new Pose2d(-5, -5, Math.toRadians(-150)))
+
+                    .build();
+
+            if (counter > 0) {
+                drive.followTrajectory(allignWithHub);
+
+                slider.setTargetPosition(-1500);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                slider.setPower(0.6);
+                rotire.setTargetPosition(-1550);
+                rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rotire.setPower(-0.8);
+
+
+                forwardToHub = drive.trajectoryBuilder(drive.getPoseEstimate())
+                        .forward(8.5 - counter * 1.5)
+                        .build();
+
+            }
+            if (zone == 1 && counter == 0) {
+                slider.setTargetPosition(-100);
+                slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slider.setPower(-0.3);
+                forwardToHub = drive.trajectoryBuilder(drive.getPoseEstimate())
+                        .forward(8.5 - counter * 1.5 + compensare)
+                        .build();
+            }
+
+            drive.followTrajectory(forwardToHub);
+
+            cuva.setPosition(0.5); // drop cube
+
+            intake.setPower(0);
+
+            sleep(700);
+
+            slider.setTargetPosition(-50);
+            slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+            slider.setPower(-0.7);
+            rotire.setTargetPosition(0);
+            rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rotire.setPower(0.6);
+
+            sleep(700);
+
+            goToWarehouse = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    .lineToSplineHeading(new Pose2d(3.5 + counter * 2 + compensare / 3, 0, Math.toRadians(-90)))
+                    .back(29)
+                    .addTemporalMarker(0.1, () ->
+                    { // intake
+                        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+                        intake.setPower(0.5);
+                    })
+                    .build();
+
+            drive.followTrajectorySequence(goToWarehouse);
+
+//            if(counter == 1 && runtime.time() > 23)
+//                break;
+            if (counter == 0) {
+                boolean breakfrom = false;
+
+                while (opModeIsActive() && !breakfrom) {
+                    drive.setWeightedDrivePower(
+                            new Pose2d(
+                                    -0.1,
+                                    0,
+                                    0
+                            )
+                    );
+
+                    drive.update();
+                    int c = 0;
+                    while (c < 25) {
+                        if (color.red() > 30 && color.green() > 30) {
+                            cuva.setPosition(0.09);
+                            intake.setDirection(DcMotorSimple.Direction.FORWARD);
+                            intake.setPower(0.7);
+                            breakfrom = true;
+                            break;
+                        }
+                        sleep(10);
+                        c++;
+                    }
+                }
+                intake.setPower(0);
+
+                drive.setWeightedDrivePower(
+                        new Pose2d(
+                                0,
+                                0,
+                                0
+                        )
+                );
+
+
+                backward = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                        .forward(Math.abs(drive.getPoseEstimate().getY()))
+                        .build();
+
+
+
+                    drive.followTrajectorySequence(backward);
+            }
+            if(counter==1)
+            {    intake.setPower(0);
+                //traiectorie
+
+                TrajectorySequence endtraj=drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                        .strafeRight(28)
+                        .turn(Math.toRadians(-90))
+                        .strafeRight(25)
+                        .build();
+                drive.followTrajectorySequence(endtraj);
+                break;
+            }
+            counter++;
         }
-        sleep(400);
-        intake.setDirection(DcMotorSimple.Direction.FORWARD);
-        intake.setPower(0.4);
-        sleep(600);
-        intake.setPower(0);
-        sleep(400);
-        cascade.setTargetPosition(-20);
-        cascade.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        cascade.setPower(0.4);
-        sleep(200);
-        drive.followTrajectory(ionutz2);
-
-        drive.followTrajectory(inapoi2);
-
 
     }
 }
