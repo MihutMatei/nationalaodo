@@ -150,7 +150,7 @@ public class auto_blueint extends LinearOpMode {
                 rotire.setTargetPosition(-1800);
                 rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 rotire.setPower(-0.8);
-                compensare=15;
+                compensare=10;
                 break;
             case 2:
                 slider.setTargetPosition(-1200);
@@ -234,7 +234,7 @@ public class auto_blueint extends LinearOpMode {
             sleep(700);
 
             goToWarehouse = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                    .lineToSplineHeading(new Pose2d(3.5 + counter * 2 + compensare / 3, 0, Math.toRadians(90)))
+                    .lineToSplineHeading(new Pose2d(3.5 + counter * 2 + compensare / 2, 0, Math.toRadians(90)))
                     .back(29)
                     .addTemporalMarker(0.1, () ->
                     { // intake

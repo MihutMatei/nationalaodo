@@ -253,7 +253,7 @@ public class auto_bluext extends LinearOpMode {
         drive.followTrajectory(endTraj);
 
         TrajectorySequence parkInWarehouse = drive.trajectorySequenceBuilder(endTraj.end())
-                .lineToLinearHeading(new Pose2d(3.5,0,Math.toRadians(90)))
+                .lineToLinearHeading(new Pose2d(4,0,Math.toRadians(90)))
                 .back(82)
                 .build();
 
