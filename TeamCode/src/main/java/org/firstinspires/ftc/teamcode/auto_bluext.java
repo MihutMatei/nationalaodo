@@ -236,45 +236,102 @@ public class auto_bluext extends LinearOpMode {
                 .build();
         Trajectory endTraj = drive.trajectoryBuilder(parkStorage.end())
                 .lineToLinearHeading(new Pose2d(-24,28,Math.toRadians(90)))
-                .addTemporalMarker(0.1,()->{
-                    slider.setTargetPosition(0);
-                    slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-
-                    slider.setPower(-0.7);
-                    rotire.setTargetPosition(5);
-                    rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    rotire.setPower(0.8);
-                })
                 .build();
         drive.followTrajectorySequence(parkStorage);
 
-      /*  detectionPipeline.setGridSize(7);
-        sleep(100);
-        int duckZone = detectionPipeline.getDuckZone();
-        int duckColumn = detectionPipeline.getColumn(duckZone);
-        int degrees = -15;
+        sleep(200);
 
-        Pose2d curPos = drive.getPoseEstimate();
-        drive.turn(degrees);
-        sleep(100);
-        while(opModeIsActive() && (duckColumn != 6 || duckColumn != 7) && degrees <= 15)
-        {
-            drive.turn(Math.toDegrees(curPos.getHeading()) + 1);
+        slider.setTargetPosition(0);
+        slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            sleep(200);
 
-            duckZone = detectionPipeline.getDuckZone();
-            duckColumn = detectionPipeline.getColumn(duckZone);
+        slider.setPower(-0.8);
+        rotire.setTargetPosition(5);
+        rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rotire.setPower(0.7);
 
-            telemetry.addData("DuckZone" , duckZone);
-            telemetry.addData("DuckCol" , duckColumn);
-
-            degrees++;
-        }
-        while(duckColumn == 6 && duckColumn == 7 && opModeIsActive())
-            telemetry.addData("FOUND", "HURAAA");*/
         drive.followTrajectory(endTraj);
+
+        TrajectorySequence parkInWarehouse = drive.trajectorySequenceBuilder(endTraj.end())
+                .lineToLinearHeading(new Pose2d(3.5,0,Math.toRadians(90)))
+                .back(82)
+                .build();
+
+        drive.followTrajectorySequence(parkInWarehouse);
+
+//
+//        detectionPipeline.setGridSize(7);
+//        sleep(800);
+//        int duckZone = detectionPipeline.getDuckZone();
+//        int duckColumn = detectionPipeline.getColumn(duckZone);
+//        int degrees = -15;
+//
+//        Pose2d curPos = drive.getPoseEstimate();
+//        drive.turn(Math.toRadians(degrees));
+//        sleep(100);
+//        while(opModeIsActive() && degrees <= 25)
+//        {
+//            curPos = drive.getPoseEstimate();
+//            drive.turn(Math.toRadians(2.5));
+//
+//            sleep(300);
+//
+//            duckZone = detectionPipeline.getDuckZone();
+//            duckColumn = detectionPipeline.getColumn(duckZone);
+//
+//            telemetry.addData("DuckZone" , duckZone);
+//            telemetry.addData("DuckCol" , duckColumn);
+//
+//            if(duckColumn == 5 || duckColumn == 7)
+//                break;
+//
+//            telemetry.update();
+//
+//            degrees++;
+//        }
+//        if(duckColumn == 5 || duckColumn == 6) {
+//            while (opModeIsActive()) {
+//                telemetry.addData("FOUND", "HURAAA");
+//                telemetry.update();
+//            }
+//        }
+//
+//
+//        Trajectory pickupDuck = drive.trajectoryBuilder(drive.getPoseEstimate())
+//                .back(37)
+//                .build();
+//
+//        drive.followTrajectory(pickupDuck);
+//
+//        cuva.setPosition(0.5);
+//        boolean breakfrom = false;
+//
+//        intake.setPower(-0.4);
+//        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+//
+//        while (opModeIsActive() && !breakfrom) {
+//            drive.setWeightedDrivePower(
+//                    new Pose2d(
+//                            -0.1,
+//                            0,
+//                            0
+//                    )
+//            );
+//
+//            drive.update();
+//            int c = 0;
+//            while (c < 30) {
+//                if (color.red() > 40 && color.green() > 40) {
+//                    cuva.setPosition(0.09);
+//                    intake.setPower(0);
+//                    breakfrom = true;
+//                    break;
+//                }
+//                sleep(10);
+//                c++;
+//            }
+//        }
+//        intake.setPower(0);
         //drive.followTrajectorySequence(parkWarehouse);
     }
 }

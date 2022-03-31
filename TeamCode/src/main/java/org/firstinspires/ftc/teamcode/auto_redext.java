@@ -236,12 +236,21 @@ public class auto_redext extends LinearOpMode {
                 })
 
                 .build();
+
         Trajectory endTraj = drive.trajectoryBuilder(parkStorage.end())
                 .lineToLinearHeading(new Pose2d(-32,-26,Math.toRadians(-90)))
                 .build();
+
         drive.followTrajectorySequence(parkStorage);
         sleep(1500);
         drive.followTrajectory(endTraj);
+
+        TrajectorySequence parkInWarehouse = drive.trajectorySequenceBuilder(endTraj.end())
+                .lineToLinearHeading(new Pose2d(1,0,Math.toRadians(-90)))
+                .back(82)
+                .build();
+
+        drive.followTrajectorySequence(parkInWarehouse);
         //drive.followTrajectorySequence(parkWarehouse);
     }
 }

@@ -239,7 +239,7 @@ public class auto_blueint extends LinearOpMode {
                     .addTemporalMarker(0.1, () ->
                     { // intake
                         intake.setDirection(DcMotorSimple.Direction.REVERSE);
-                        intake.setPower(0.5);
+                        intake.setPower(0.6);
                     })
                     .build();
 
