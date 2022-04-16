@@ -156,6 +156,7 @@ public class auto_redext extends LinearOpMode {
         slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         if (!opModeIsActive()) return;
+        sleep(2000);
 
         drive.followTrajectory(turnDuck);
         runtime2.reset();
@@ -250,7 +251,7 @@ public class auto_redext extends LinearOpMode {
                 .back(82)
                 .build();
 
-        drive.followTrajectorySequence(parkInWarehouse);
+       drive.followTrajectorySequence(parkInWarehouse);
         //drive.followTrajectorySequence(parkWarehouse);
     }
 }
