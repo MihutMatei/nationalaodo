@@ -140,7 +140,7 @@ public class auto_redint extends LinearOpMode {
         if (!opModeIsActive()) return;
 
         drive.followTrajectory(allignWithHub);
-        sleep(300);
+        sleep(500);
         switch (zone)
         {
             case 1:
@@ -175,7 +175,7 @@ public class auto_redint extends LinearOpMode {
                 break;
         }
 
-        sleep(300);
+        sleep(500);
 
         int counter = 0;
         ElapsedTime runtime = new ElapsedTime(0);;
@@ -220,7 +220,7 @@ public class auto_redint extends LinearOpMode {
 
             intake.setPower(0);
 
-            sleep(700);
+            sleep(600);
 
             slider.setTargetPosition(0);
             slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -231,7 +231,7 @@ public class auto_redint extends LinearOpMode {
             rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rotire.setPower(0.6);
 
-            sleep(700);
+            sleep(600);
 
             goToWarehouse = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                     .lineToSplineHeading(new Pose2d(3.5 + counter * 2 + compensare / 2, 0, Math.toRadians(-90)))
@@ -269,7 +269,7 @@ public class auto_redint extends LinearOpMode {
                             breakfrom = true;
                             break;
                         }
-                        sleep(10);
+                        sleep(5);
                         c++;
                     }
                 }
