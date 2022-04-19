@@ -113,6 +113,8 @@
              );
              drive.update();
 
+            // drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
             //outtake
              if(gamepad1.square) {
                  intake.setDirection(DcMotorSimple.Direction.FORWARD);
