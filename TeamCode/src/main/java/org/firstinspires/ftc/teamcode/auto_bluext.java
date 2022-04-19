@@ -157,7 +157,7 @@ public class auto_bluext extends LinearOpMode {
         slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         if (!opModeIsActive()) return;
-        sleep(6000);
+
         drive.followTrajectory(turnDuck);
         runtime2.reset();
         while(runtime2.time()<3)
