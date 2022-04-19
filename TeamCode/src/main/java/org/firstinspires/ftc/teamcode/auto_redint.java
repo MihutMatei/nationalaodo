@@ -247,7 +247,7 @@ public class auto_redint extends LinearOpMode {
 
 //            if(counter == 1 && runtime.time() > 23)
 //                break;
-            if (counter == 0) {
+            if (counter <2) {
                 boolean breakfrom = false;
 
                 while (opModeIsActive() && !breakfrom) {
@@ -292,7 +292,7 @@ public class auto_redint extends LinearOpMode {
 
                     drive.followTrajectorySequence(backward);
             }
-            if(counter==1)
+            if(counter==2)
             {    intake.setPower(0);
                 //traiectorie
 
