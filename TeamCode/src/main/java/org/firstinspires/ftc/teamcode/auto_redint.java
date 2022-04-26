@@ -290,7 +290,7 @@ public class auto_redint extends LinearOpMode {
 
 
 
-                    drive.followTrajectorySequence(backward);
+                drive.followTrajectorySequence(backward);
             }
             if(counter==2)
             {    intake.setPower(0);
