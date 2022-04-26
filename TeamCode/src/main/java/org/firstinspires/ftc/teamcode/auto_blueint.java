@@ -140,7 +140,7 @@ public class auto_blueint extends LinearOpMode {
         if (!opModeIsActive()) return;
 
         drive.followTrajectory(allignWithHub);
-        sleep(300);
+        sleep(500);
         switch (zone)
         {
             case 1:
@@ -175,7 +175,7 @@ public class auto_blueint extends LinearOpMode {
                 break;
         }
 
-        sleep(300);
+        sleep(500);
 
         int counter = 0;
         ElapsedTime runtime = new ElapsedTime(0);;
@@ -195,13 +195,13 @@ public class auto_blueint extends LinearOpMode {
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                 slider.setPower(0.6);
-                rotire.setTargetPosition(-1550);
+                rotire.setTargetPosition(-1470);
                 rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 rotire.setPower(-0.8);
 
 
                 forwardToHub = drive.trajectoryBuilder(drive.getPoseEstimate())
-                        .forward(8.5 - counter * 1.5)
+                        .forward(10 - counter * 1.5)
                         .build();
 
             }
@@ -210,7 +210,7 @@ public class auto_blueint extends LinearOpMode {
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 slider.setPower(-0.3);
                 forwardToHub = drive.trajectoryBuilder(drive.getPoseEstimate())
-                        .forward(8.5 - counter * 1.5 + compensare)
+                        .forward(7 - counter * 1.5 + compensare)
                         .build();
             }
 
@@ -220,7 +220,7 @@ public class auto_blueint extends LinearOpMode {
 
             intake.setPower(0);
 
-            sleep(700);
+            sleep(600);
 
             slider.setTargetPosition(-50);
             slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -231,11 +231,11 @@ public class auto_blueint extends LinearOpMode {
             rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rotire.setPower(0.6);
 
-            sleep(700);
+            sleep(600);
 
             goToWarehouse = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                     .lineToSplineHeading(new Pose2d(3.5 + counter * 2 + compensare / 2, 0, Math.toRadians(90)))
-                    .back(29)
+                    .back(30.5)
                     .addTemporalMarker(0.1, () ->
                     { // intake
                         intake.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -247,7 +247,7 @@ public class auto_blueint extends LinearOpMode {
 
 //            if(counter == 1 && runtime.time() > 23)
 //                break;
-            if(counter==0)
+            if(counter <2)
             {
             boolean breakfrom = false;
 
@@ -262,15 +262,15 @@ public class auto_blueint extends LinearOpMode {
 
                 drive.update();
                 int c = 0;
-                while (c < 25) {
-                    if (color.red() > 30 && color.green() > 30) {
+                while (c < 30) {
+                    if (color.red() > 60 && color.green() > 60) {
                         cuva.setPosition(0.09);
                         intake.setDirection(DcMotorSimple.Direction.FORWARD);
                         intake.setPower(0.7);
                         breakfrom = true;
                         break;
                     }
-                    sleep(10);
+                    sleep(5);
                     c++;
                 }
             }
@@ -294,7 +294,7 @@ public class auto_blueint extends LinearOpMode {
                 drive.followTrajectorySequence(backward);
         }
 
-            if(counter==1)
+            if(counter==2)
             {    intake.setPower(0);
                 //traiectorie
 
