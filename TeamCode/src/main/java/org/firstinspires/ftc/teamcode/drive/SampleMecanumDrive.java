@@ -27,6 +27,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.teamcode.telemetry;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -152,6 +153,22 @@ public class SampleMecanumDrive extends MecanumDrive {
 
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(follower, HEADING_PID);
+    }
+    public int getPositionLF()
+    {
+        return leftFront.getCurrentPosition();
+    }
+    public int getPositionLR()
+    {
+        return leftRear.getCurrentPosition();
+    }
+    public int getPositionRF()
+    {
+        return rightFront.getCurrentPosition();
+    }
+    public int getPositionRR()
+    {
+        return rightRear.getCurrentPosition();
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
