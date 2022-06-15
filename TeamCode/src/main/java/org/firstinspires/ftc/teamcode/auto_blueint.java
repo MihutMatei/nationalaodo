@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -28,6 +29,7 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
+import org.firstinspires.ftc.teamcode.util.RobotUtils;
 @Autonomous(name = "BLUEINT")
 public class auto_blueint extends LinearOpMode {
     OpenCvCamera webcam;
@@ -45,6 +47,11 @@ public class auto_blueint extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        //RobotUtils robot = new RobotUtils();
+
+     //
+        //   robot.carusel.setPower(5);
+
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -86,7 +93,7 @@ public class auto_blueint extends LinearOpMode {
                 .build();
 
         Trajectory forwardToHub = drive.trajectoryBuilder(allignWithHub.end())
-                .forward(12+compensare)
+                .forward(7.5 + compensare)
 
                 .build();
 
@@ -122,9 +129,9 @@ public class auto_blueint extends LinearOpMode {
             left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
             right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
 
-            if (left_avg <= 125)
+            if (left_avg <= 124)
                 zone = 1;
-            else if (right_avg <= 125)
+            else if (right_avg <= 124)
                 zone = 2;
             else
                 zone = 3;
@@ -184,7 +191,7 @@ public class auto_blueint extends LinearOpMode {
             Pose2d curPos = drive.getPoseEstimate();
 
             allignWithHub = drive.trajectoryBuilder(drive.getPoseEstimate())
-                    .lineToSplineHeading(new Pose2d(-5, 5, Math.toRadians(150)))
+                    .lineToSplineHeading(new Pose2d(-6.5, 5, Math.toRadians(150)))
 
                     .build();
 
@@ -199,9 +206,8 @@ public class auto_blueint extends LinearOpMode {
                 rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 rotire.setPower(-0.8);
 
-
                 forwardToHub = drive.trajectoryBuilder(drive.getPoseEstimate())
-                        .forward(10 - counter * 1.5)
+                        .forward(10)
                         .build();
 
             }
@@ -231,7 +237,7 @@ public class auto_blueint extends LinearOpMode {
             rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rotire.setPower(0.6);
 
-            sleep(600);
+            sleep(800);
 
             goToWarehouse = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                     .lineToSplineHeading(new Pose2d(3.5 + counter * 2 + compensare / 2, 0, Math.toRadians(90)))
@@ -239,7 +245,7 @@ public class auto_blueint extends LinearOpMode {
                     .addTemporalMarker(0.1, () ->
                     { // intake
                         intake.setDirection(DcMotorSimple.Direction.REVERSE);
-                        intake.setPower(0.6);
+                        intake.setPower(0.65);
                     })
                     .build();
 
@@ -247,11 +253,18 @@ public class auto_blueint extends LinearOpMode {
 
 //            if(counter == 1 && runtime.time() > 23)
 //                break;
-            if(counter <2)
+            if(counter < 2)
             {
             boolean breakfrom = false;
 
             while (opModeIsActive() && !breakfrom) {
+
+                if (color.red() > 50 && color.green() > 50) {
+                    cuva.setPosition(0.09);
+                    breakfrom = true;
+                    break;
+                }
+
                 drive.setWeightedDrivePower(
                         new Pose2d(
                                 -0.1,
@@ -263,7 +276,7 @@ public class auto_blueint extends LinearOpMode {
                 drive.update();
                 int c = 0;
                 while (c < 30) {
-                    if (color.red() > 60 && color.green() > 60) {
+                    if (color.red() > 50 && color.green() > 50) {
                         cuva.setPosition(0.09);
                         intake.setDirection(DcMotorSimple.Direction.FORWARD);
                         intake.setPower(0.7);

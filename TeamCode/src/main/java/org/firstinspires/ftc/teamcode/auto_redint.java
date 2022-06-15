@@ -122,12 +122,16 @@ public class auto_redint extends LinearOpMode {
             left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
             right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
 
-            if (left_avg <= 125)
+            if (left_avg <= 124)
                 zone = 1;
-            else if (right_avg <= 125)
+            else if (right_avg <= 124)
                 zone = 2;
             else
                 zone = 3;
+
+            telemetry.addData("R", color.red());
+            telemetry.addData("G", color.blue());
+            telemetry.addData("B", color.green());
 
             telemetry.addData("Zone", zone);
             telemetry.addData("Left", left_avg);
@@ -140,7 +144,7 @@ public class auto_redint extends LinearOpMode {
         if (!opModeIsActive()) return;
 
         drive.followTrajectory(allignWithHub);
-        sleep(500);
+        sleep(300);
         switch (zone)
         {
             case 1:
@@ -201,7 +205,7 @@ public class auto_redint extends LinearOpMode {
 
 
                 forwardToHub = drive.trajectoryBuilder(drive.getPoseEstimate())
-                        .forward(10 - counter * 1.5)
+                        .forward(10 - counter * 2)
                         .build();
 
             }
@@ -210,7 +214,7 @@ public class auto_redint extends LinearOpMode {
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 slider.setPower(-0.3);
                 forwardToHub = drive.trajectoryBuilder(drive.getPoseEstimate())
-                        .forward(7 - counter * 1.5 + compensare)
+                        .forward(8 - counter * 2 + compensare)
                         .build();
             }
 
@@ -235,7 +239,7 @@ public class auto_redint extends LinearOpMode {
 
             goToWarehouse = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                     .lineToSplineHeading(new Pose2d(3.5 + counter * 2 + compensare / 2, 0, Math.toRadians(-90)))
-                    .back(30.5)
+                    .back(30)
                     .addTemporalMarker(0.1, () ->
                     { // intake
                         intake.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -244,10 +248,15 @@ public class auto_redint extends LinearOpMode {
                     .build();
 
             drive.followTrajectorySequence(goToWarehouse);
+            boolean found_cube = false;
 
+            if (color.red() > 40 && color.blue() > 30) {
+                cuva.setPosition(0.09);
+                found_cube = true;
+            }
 //            if(counter == 1 && runtime.time() > 23)
 //                break;
-            if (counter <2) {
+            if (counter < 1 && !found_cube) {
                 boolean breakfrom = false;
 
                 while (opModeIsActive() && !breakfrom) {
@@ -262,7 +271,8 @@ public class auto_redint extends LinearOpMode {
                     drive.update();
                     int c = 0;
                     while (c < 30) {
-                        if (color.red() > 60 && color.green() > 60) {
+
+                        if (color.red() > 49 && color.blue() > 30) {
                             cuva.setPosition(0.09);
                             intake.setDirection(DcMotorSimple.Direction.FORWARD);
                             intake.setPower(0.7);
@@ -292,14 +302,14 @@ public class auto_redint extends LinearOpMode {
 
                 drive.followTrajectorySequence(backward);
             }
-            if(counter==2)
+            if(counter==1)
             {    intake.setPower(0);
                 //traiectorie
 
                 TrajectorySequence endtraj=drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                         .strafeRight(28)
                         .turn(Math.toRadians(-90))
-                        .strafeRight(25)
+                        .strafeRight(20)
                         .back(4)
                         .build();
                 drive.followTrajectorySequence(endtraj);

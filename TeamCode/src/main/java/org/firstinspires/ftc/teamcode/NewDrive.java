@@ -40,8 +40,15 @@
  import com.qualcomm.robotcore.hardware.Servo;
  import com.qualcomm.robotcore.util.ElapsedTime;
 
+ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
  import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+ import org.firstinspires.ftc.teamcode.drive.advanced.DetectionPipeline;
+ import org.firstinspires.ftc.teamcode.drive.advanced.SamplePipeline;
  import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
+ import org.openftc.easyopencv.OpenCvCamera;
+ import org.openftc.easyopencv.OpenCvCameraFactory;
+ import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.firstinspires.ftc.teamcode.util.RobotUtils;
 
  @TeleOp(name="NEWDRIVE", group="Linear Opmode")
 
@@ -61,14 +68,14 @@
      public void runOpMode() throws InterruptedException {
 
 
-
          intake =hardwareMap.get(DcMotorEx.class,"intake");
          color = hardwareMap.get(ColorSensor.class, "color");
          cuva = hardwareMap.get(Servo.class,"cuva");
          rotire = hardwareMap.get(DcMotorEx.class,"rotire");
          slider = hardwareMap.get(DcMotorEx.class,"slider");
          carusel = hardwareMap.get(DcMotorEx.class,"carusel");
-
+         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+         OpenCvCamera webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
          slider.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
          slider.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -78,15 +85,55 @@
          rotire.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
          boolean ok=true;
+         RobotUtils robot = new RobotUtils(hardwareMap);
 
          ElapsedTime runtime = new ElapsedTime(0);
 
          SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
        //  drive.setPoseEstimate(new Pose2d(-40,0,-90));
+
+         DetectionPipeline detectionPipeline = new DetectionPipeline();
+         detectionPipeline.setGridSize(7);
+
+         webcam.setPipeline(detectionPipeline);
+         drive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+             @Override
+             public void onOpened() {
+                 webcam.startStreaming(640, 480, OpenCvCameraRotation.UPRIGHT);
+             }
+
+             @Override
+             public void onError(int errorCode) {
+
+             }
+         });
+
+//         while(!opModeIsActive())
+//         {
+//             telemetry.addData("Best zone", detectionPipeline.getBestZone());
+//
+//             for(int i = 1; i <= detectionPipeline.getGridSize() * detectionPipeline.getGridSize();i++)
+//             {
+//                 double lum = detectionPipeline.getZoneLuminosity(i);
+//                 telemetry.addData("Zone " + i, lum);
+//             }
+//             telemetry.update();
+//
+//         }
          waitForStart();
+
          drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            int counter = 0;
+         robot.startIntake(0.5);
+         sleep(7000);
+         robot.stopIntake();
+/*
+//         robot.startIntake(0.5);
+//         sleep(5000);
+//         robot.stopIntake();*/
+
          while (opModeIsActive()) {
              rotire.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -96,21 +143,30 @@
              telemetry.addData("cuva",cuva.getPosition());
              telemetry.addData("slider",slider.getCurrentPosition());
              telemetry.addData("rotire",rotire.getCurrentPosition());
+//             telemetry.addData("Best zone", detectionPipeline.getBestZone());
+//
+//             for(int i = 1; i <= detectionPipeline.getGridSize() * detectionPipeline.getGridSize();i++)
+//             {
+//                 double lum = detectionPipeline.getZoneLuminosity(i);
+//                 telemetry.addData("Zone " + i, lum);
+//             }
 
              telemetry.update();
 
              ElapsedTime runtime1 = new ElapsedTime(0);
 
+
             //am dat reverse la fata/spate
 
              drive.setWeightedDrivePower(
                      new Pose2d(
-                             gamepad1.left_stick_y,
-                             gamepad1.left_stick_x ,
+                             -gamepad1.left_stick_y,
+                            - gamepad1.left_stick_x ,
                              -gamepad1.right_stick_x
                      )
 
              );
+             drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
              drive.update();
 
             //outtake
@@ -189,10 +245,89 @@
                  //runtime.reset();
              }
              if(gamepad2.dpad_up) {
+
                  ok = true;
                  rotire.setPower(0);
+
              }
 
+//             if(gamepad1.dpad_left) {
+//                 int bestZone = detectionPipeline.getBestZone();
+//                 int column = detectionPipeline.getColumn(bestZone);
+//                 double degrees = (column - 5) * 8;
+//
+//                 if(column != 4 && column != 5)
+//                     drive.turn(Math.toRadians(-degrees));
+//
+//
+//                 sleep(2000);
+//
+//                 ElapsedTime acceltime = new ElapsedTime(0);;
+//
+//                 acceltime.startTime();
+//
+//                 intake.setPower(-0.4);
+//                 intake.setDirection(DcMotorSimple.Direction.REVERSE);
+//
+//                 boolean breakfrom = false;
+//                 while (opModeIsActive() && !breakfrom) {
+//                     double accel = Math.min(0.9, acceltime.time() * 0.05);
+//                     telemetry.addData("accel",accel);
+//                     telemetry.update();
+//                     drive.setWeightedDrivePower(
+//                             new Pose2d(
+//                                     -(0.01 + accel),
+//                                     0,
+//                                     0
+//                             )
+//                     );
+//
+//                     drive.update();
+//                     int c = 0;
+//                     while (c < 30) {
+//                         if (color.red() > 60 && color.green() > 60) {
+//                             cuva.setPosition(0.09);
+//                             intake.setDirection(DcMotorSimple.Direction.FORWARD);
+//                             intake.setPower(0.7);
+//                             breakfrom = true;
+//                             break;
+//                         }
+//                         sleep(5);
+//                         c++;
+//                     }
+//                 }
+//                 intake.setPower(0);
+//
+//                 drive.setWeightedDrivePower(
+//                         new Pose2d(
+//                                 0,
+//                                 0,
+//                                 0
+//                         )
+//                 );
+//                continue;
+//            }
+
+//
+//             while(opModeIsActive() && degrees <= 25)
+////        {
+//            curPos = drive.getPoseEstimate();
+//            drive.turn(Math.toRadians(2.5));
+//
+//            sleep(300);
+//
+//            duckZone = detectionPipeline.getDuckZone();
+//            duckColumn = detectionPipeline.getColumn(duckZone);
+//
+//            telemetry.addData("DuckZone" , duckZone);
+//            telemetry.addData("DuckCol" , duckColumn);
+//            if(duckColumn == 5 || duckColumn == 6)
+//                break;
+//
+//            telemetry.update();
+//
+//            degrees++;
+//        }
              //slider auto buttons
              if(gamepad2.cross)
              {

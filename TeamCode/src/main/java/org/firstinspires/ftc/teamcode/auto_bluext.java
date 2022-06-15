@@ -141,9 +141,9 @@ public class auto_bluext extends LinearOpMode {
             left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
             right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
 
-            if (left_avg <= 125)
+            if (left_avg <= 124)
                 zone = 1;
-            else if (right_avg <= 125)
+            else if (right_avg <= 124)
                 zone = 2;
             else
                 zone = 3;
@@ -257,7 +257,7 @@ public class auto_bluext extends LinearOpMode {
                 .back(82)
                 .build();
 
-        drive.followTrajectorySequence(parkInWarehouse);
+       // drive.followTrajectorySequence(parkInWarehouse);
 
 //
 //        detectionPipeline.setGridSize(7);
@@ -281,8 +281,7 @@ public class auto_bluext extends LinearOpMode {
 //
 //            telemetry.addData("DuckZone" , duckZone);
 //            telemetry.addData("DuckCol" , duckColumn);
-//
-//            if(duckColumn == 5 || duckColumn == 7)
+//            if(duckColumn == 5 || duckColumn == 6)
 //                break;
 //
 //            telemetry.update();
