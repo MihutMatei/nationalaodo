@@ -11,22 +11,27 @@ import org.openftc.easyopencv.OpenCvPipeline;
 public class DetectionPipeline extends OpenCvPipeline {
     private static final Scalar BLUE = new Scalar(0, 0, 255);
 
-    private static final int THRESHOLD = 120;
+    private static int BASE_THRESHOLD = 120;
+    private static int THRESHOLD = 120;
 
     Mat luminosityMat = new Mat();
     Mat extractionMat = new Mat();
+    Mat rgbMat = new Mat();
 
     private static int gridSize = 3;
     private static int cols,rows;
     private static int numberOfElements = 0;
 
     private void inputToLuminosity(Mat input) {
+        rgbMat = input;
         Imgproc.cvtColor(input, extractionMat, Imgproc.COLOR_RGB2YCrCb); // convert rgb to chroma and luminosity
 
         Core.extractChannel(extractionMat, luminosityMat, 2);
+
     }
 
     private Mat[]   allMats = new Mat[256];
+    //private double[3][] rgbMats = new Mat[256];
     private boolean[] validZones = new boolean[1001];
     
     @Override
@@ -67,10 +72,10 @@ public class DetectionPipeline extends OpenCvPipeline {
                 Point center = new Point((topLeftX + botRightX) / 2 - 25, (topLeftY + botRightY) / 2);
 
                 allMats[numberOfElements] = luminosityMat.submat(new Rect(p1,p2));
-
+                Mat p = input.submat(new Rect(p1,p2));
                 String zoneName = Integer.toString((numberOfElements + 1));
 
-                Imgproc.putText(input, zoneName, center , Imgproc.FONT_ITALIC , 1, BLUE,1);
+                //Imgproc.putText(input, zoneName, center , Imgproc.FONT_ITALIC , 1, BLUE,1);
 
                 Imgproc.rectangle(input, p1, p2, BLUE, 2);
 
@@ -85,7 +90,10 @@ public class DetectionPipeline extends OpenCvPipeline {
     }
 
    // public boolean[] getValidZones() { return validZones; }
-    public void setGridSize(int gridSize) { this.gridSize = gridSize;}
+    public void setGridSize(int gridSize) {
+        this.gridSize = gridSize;
+        this.THRESHOLD = (int)(BASE_THRESHOLD - gridSize / 1.5);
+    }
 
     public int getGridSize() { return this.gridSize;}
 
@@ -149,51 +157,29 @@ public class DetectionPipeline extends OpenCvPipeline {
         return bestZone;
 
     }
-    public int getBestZone(ZoneType preferredZone) { // index 1 based zones
+    public int getBestZone() { // index 1 based zones
         int bestZone = 0;
-        int bestRow = 0;
-        ZoneType bestZoneType = ZoneType.E_NONE;
-
-        boolean foundCenterZone = false;
-        boolean foundPrefferedZone = false;
+        double bestLum = 2000;
 
         for(int i = 0; i < allMats.length;i++) {
-            if(!validZones[i]) continue;
+            if (!validZones[i]) continue;
 
-            ZoneType zoneType = getZoneType(i + 1);
+            int zone = i + 1;
+            int row = getRow(zone);
+            int column = getColumn(zone);
 
-            int row = getRow(i + 1);
-            int column = getColumn(i + 1);
-            if(row > bestRow)
+            double lum = getZoneLuminosity(zone);
+
+            if (column == 4 || column == 5)
             {
+                return zone;
+            }
+
+            if(lum < bestLum) {
+                bestLum = lum;
                 bestZone = i + 1;
-                bestZoneType = zoneType;
-                bestRow = row;
             }
-            else if(row == bestRow)
-            {
-                if(zoneType == ZoneType.E_CENTER){
-                    bestZone = i + 1;
-                    bestZoneType = zoneType;
-                    bestRow = row;
-                }
-                else if(zoneType == bestZoneType)
-                {
-                    if(Math.abs(column - gridSize) < Math.abs(getColumn(bestZone) - gridSize)) // adica e mai aproape de centru
-                    {
-                        bestZone = i + 1;
-                        bestZoneType = zoneType;
-                        bestRow = row;
-                    }
-                }
-                else if(zoneType == preferredZone && bestZoneType != ZoneType.E_CENTER)
-                {
-                    bestZone = i + 1;
-                    bestZoneType = zoneType;
-                    bestRow = row;
-                }
 
-            }
         }
 
         return bestZone;
