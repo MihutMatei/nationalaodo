@@ -122,9 +122,9 @@ public class auto_redint extends LinearOpMode {
             left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
             right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
 
-            if (left_avg <= 125)
+            if (left_avg <= 123.5)
                 zone = 1;
-            else if (right_avg <= 125)
+            else if (right_avg <= 123.5)
                 zone = 2;
             else
                 zone = 3;
@@ -157,7 +157,7 @@ public class auto_redint extends LinearOpMode {
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                 slider.setPower(0.6);
-                rotire.setTargetPosition(-1800);
+                rotire.setTargetPosition(-1850);
                 rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 rotire.setPower(-0.8);
                 compensare=0;
@@ -171,7 +171,7 @@ public class auto_redint extends LinearOpMode {
                 rotire.setTargetPosition(-1500);
                 rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 rotire.setPower(-0.8);
-                compensare=0;
+                compensare=-1;
                 break;
         }
 
