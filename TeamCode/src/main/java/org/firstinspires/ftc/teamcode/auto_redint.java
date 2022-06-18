@@ -157,7 +157,7 @@ public class auto_redint extends LinearOpMode {
                 slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                 slider.setPower(0.6);
-                rotire.setTargetPosition(-1850);
+                rotire.setTargetPosition(-1930);
                 rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 rotire.setPower(-0.8);
                 compensare=0;
@@ -220,18 +220,21 @@ public class auto_redint extends LinearOpMode {
 
             intake.setPower(0);
 
-            sleep(600);
+            sleep(500);
+            cuva.setPosition(0.09);
+            sleep(400);
 
             slider.setTargetPosition(0);
             slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
             slider.setPower(-0.7);
-            rotire.setTargetPosition(0);
+            rotire.setTargetPosition(-10);
             rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rotire.setPower(0.6);
 
-            sleep(600);
+            cuva.setPosition(0.5);
+            sleep(700);
 
             goToWarehouse = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                     .lineToSplineHeading(new Pose2d(3.5 + counter * 2 + compensare / 2, 0, Math.toRadians(-90)))
