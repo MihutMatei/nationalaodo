@@ -229,7 +229,7 @@ public class auto_blueint extends LinearOpMode {
 
 
             slider.setPower(-0.7);
-            rotire.setTargetPosition(-70);
+            rotire.setTargetPosition(-10);
             rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rotire.setPower(0.6);
 
