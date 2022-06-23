@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -140,9 +141,9 @@ public class auto_redext extends LinearOpMode {
             left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
             right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
 
-            if (left_avg <= 125)
+            if (left_avg <= 123.5)
                 zone = 1;
-            else if (right_avg <= 125)
+            else if (right_avg <= 123.5)
                 zone = 2;
             else
                 zone = 3;
@@ -218,7 +219,7 @@ public class auto_redext extends LinearOpMode {
                     slider.setTargetPosition(-1500);
                     slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    slider.setPower(0.6);
+                    slider.setPower(0.8);
                     rotire.setTargetPosition(-1300);
                     rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     rotire.setPower(-0.8);
@@ -229,7 +230,7 @@ public class auto_redext extends LinearOpMode {
                     slider.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
-                    slider.setPower(-0.7);
+                    slider.setPower(-0.8);
                     rotire.setTargetPosition(5);
                     rotire.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     rotire.setPower(0.6);
@@ -238,7 +239,8 @@ public class auto_redext extends LinearOpMode {
                 .build();
 
         Trajectory endTraj = drive.trajectoryBuilder(parkStorage.end())
-                .lineToLinearHeading(new Pose2d(-32,-26,Math.toRadians(-90)))
+                //.lineToLinearHeading(new Pose2d(-32,-26,Math.toRadians(-90)))
+                .lineToLinearHeading(new Pose2d(-27,-26,Math.toRadians(-90)))
                 .build();
 
         drive.followTrajectorySequence(parkStorage);
@@ -250,7 +252,9 @@ public class auto_redext extends LinearOpMode {
                 .back(82)
                 .build();
 
-        drive.followTrajectorySequence(parkInWarehouse);
-        //drive.followTrajectorySequence(parkWarehouse);
+       // drive.followTrajectorySequence(parkInWarehouse);
+
+
     }
+
 }
