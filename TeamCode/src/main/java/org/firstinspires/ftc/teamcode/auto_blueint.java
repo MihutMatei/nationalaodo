@@ -122,9 +122,9 @@ public class auto_blueint extends LinearOpMode {
             left_avg = (detectionPipeline.getZoneLuminosity(1) + detectionPipeline.getZoneLuminosity(2)) / 2;
             right_avg = (detectionPipeline.getZoneLuminosity(3) + detectionPipeline.getZoneLuminosity(4)) / 2;
 
-            if (left_avg <= 123.5)
+            if (left_avg <= 124)
                 zone = 1;
-            else if (right_avg <= 123.5)
+            else if (right_avg <= 124)
                 zone = 2;
             else
                 zone = 3;
